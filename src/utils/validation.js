@@ -2,9 +2,6 @@ const joi = require('joi');
 
 const PASSWORD_REGEX = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[^\w\s]).{8,}$/;
 
-const validator = (schema) => (payload) =>
-  schema.validate(payload, { abortEarly: false });
-
 const userSchema = joi.object({
 
   userName: joi.string().min(4).max(16).required()
@@ -28,4 +25,6 @@ const userSchema = joi.object({
 
 });
 
-exports.validateSignup = validator(userSchema);
+exports.validateSignup = {
+  userSchema
+};
