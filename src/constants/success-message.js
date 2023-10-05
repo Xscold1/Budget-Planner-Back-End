@@ -1,4 +1,4 @@
-const STATUS_CODE = require('./status-codes')
+const STATUS_CODE = require('./status-code')
 const STATUS = require('./status')
 
 
@@ -16,10 +16,16 @@ const successMessage = {
     message: 'User Registration Successful',
   },
 
-  USER_SUCCESS_LOGOUT: {
+  USER_LOGOUT_SUCCESS: {
     status: STATUS.OK,
     statusCode:STATUS_CODE.SUCCESS,
     message:'Logout Successfully'
+  },
+
+  USER_LOGIN_SUCCESS: {
+    status: STATUS.OK,
+    statusCode:STATUS_CODE.SUCCESS,
+    message:'Login Successfully'
   },
 
   UPDATE_NOTIFICATION:{
@@ -29,3 +35,6 @@ const successMessage = {
   },
   
 }
+
+
+module.exports = successMessage;

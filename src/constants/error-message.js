@@ -1,5 +1,5 @@
 const STATUS = require('./status');
-const STATUS_CODE = require('./status-codes');
+const STATUS_CODE = require('./status-code');
 
 const errorMessage = {
   // General Error Messages
@@ -20,6 +20,12 @@ const errorMessage = {
     message: 'Failed to create user.',
   },
 
+  USER_ERROR_DO_NOT_EXIST:{
+    status: STATUS.FAILED,
+    statusCode: STATUS_CODE.CONFLICT,
+    message: 'User does not exist.',
+  },
+
   USER_ERROR_TAKEN: {
     status: STATUS.FAILED,
     statusCode: STATUS_CODE.CONFLICT,
@@ -37,5 +43,14 @@ const errorMessage = {
     statusCode: STATUS_CODE.CONFLICT,
     message: 'Email already exist.',
   },
+
+  USER_ERROR_INVALID_PASSWORD:{
+    status: STATUS.FAILED,
+    statusCode: STATUS_CODE.VALIDATION_ERROR,
+    message: 'Invalid password.',
+  }
   
 }
+
+
+module.exports = errorMessage;

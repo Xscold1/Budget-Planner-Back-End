@@ -25,6 +25,6 @@ const userSchema = joi.object({
 
 });
 
-exports.validateSignup = {
+module.exports = {
   userSchema
 };
