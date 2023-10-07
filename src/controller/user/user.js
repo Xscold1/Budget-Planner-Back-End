@@ -42,23 +42,7 @@ const LOGIN = async (req , res ) => {
   }
 }
 
-const BUDGET_PLANNER_ALLOCATOR = async (req , res) =>{
-  try {
-    const response = await userService.BUDGET_PLANNER_ALLOCATOR(req.body);
-
-    return res.json({...SUCCESS_MESSAGE.USER_LOGIN_SUCCESS, response});
-
-  } catch (error) {
-    if (error.code === 11000) return res.json(ERROR_MESSAGE.USER_ERROR_TAKEN)
-    console.log(error);
-    if(error.message) return res.json(error);
-
-    return res.json(ERROR_MESSAGE.GENERAL_ERROR_REQUEST);
-  }
-}
-
 module.exports = {
   REGISTER,
   LOGIN,
-  BUDGET_PLANNER_ALLOCATOR
 }

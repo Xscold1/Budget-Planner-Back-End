@@ -10,6 +10,12 @@ const successMessage = {
     message: 'Success', 
   },
 
+  USER_SUCCESS_ALLOCATION:{
+    status: STATUS.OK,
+    statusCode: STATUS_CODE.SUCCESS,
+    message: 'Budget Allocated Successfully', 
+  },
+
   USER_SUCCESS_REGISTRATION: {
     status: STATUS.OK,
     statusCode: STATUS_CODE.CREATED,

@@ -14,9 +14,11 @@ app.use(bodyParser.json());
 
 //routes declarations
 const USER_ROUTES = require('./src/routes/user')
+const BUDGET_ROUTES = require('./src/routes/budget')
 
 //routes
 app.use('/api', USER_ROUTES);
+app.use('/api', BUDGET_ROUTES);
 
 const PORT = process.env.PORT || 5000;
 

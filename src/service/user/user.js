@@ -1,7 +1,6 @@
 
 //models
 const USER = require('../../models/user-model');
-const BUDGET = require('../../models/budget-model');
 
 //constants
 const ERROR_MESSAGE  = require('../../constants/error-message');
@@ -50,31 +49,10 @@ const LOGIN = async (reqBody) => {
   }
 }
 
-const BUDGET_PLANNER_ALLOCATOR = async (reqBody) =>{
-  try {
-    const {startDate, endDate, totalBudget,needs,wants,savings, budgetType} = reqBody
 
-    const budgetPayload = {
-      startDate,
-      endDate,
-      totalBudget,
-      needs,
-      wants,
-      savings,
-      budgetType
-    }
-
-    const budget = await BUDGET.create(budgetPayload)
-
-    return budget;
-
-  }catch (error) {
-    throw error;
-  }
-}
 
 module.exports = {
   REGISTER,
   LOGIN,
-  BUDGET_PLANNER_ALLOCATOR
+ 
 }

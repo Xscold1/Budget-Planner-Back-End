@@ -37,18 +37,6 @@ const budget = new Schema({
           type: 'number',
           default: 0,
         },
-        expense:[{
-          createdDate: {
-            type: 'Date',
-          },
-          amount: {
-            type: 'Number',
-            default: 0,
-          },
-          note: {
-            type: 'String',
-          }
-        }]
       }],
     wants:[{
       name: {
@@ -58,18 +46,6 @@ const budget = new Schema({
         type: 'number',
         default: 0,
       },
-      expense:[{
-        createdDate: {
-          type: 'Date',
-        },
-        amount: {
-          type: 'Number',
-          default: 0,
-        },
-        note: {
-          type: 'String',
-        }
-      }]
     }],
     savings:[{
       name: {
@@ -79,19 +55,11 @@ const budget = new Schema({
         type: 'number',
         default: 0,
       },
-      expense:[{
-        createdDate: {
-          type: 'Date',
-        },
-        amount: {
-          type: 'Number',
-          default: 0,
-        },
-        note: {
-          type: 'String',
-        }
-      }]
     }],
+    userId:{
+      type:mongoose.Schema.Types.ObjectId,
+      ref: 'user'
+    }
 })
 
 const model  = mongoose.model('budget', budget);
