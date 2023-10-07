@@ -12,7 +12,9 @@ const expenses = new Schema({
   },
   note:{
     type: "String",
-
+  },
+  category:{
+    type: "String",
   },
   expenseType: {
     type: "String",
@@ -20,7 +22,7 @@ const expenses = new Schema({
   },
   userId:{
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'budget'
+    ref: 'user'
   }
 })
 

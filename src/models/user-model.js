@@ -16,7 +16,6 @@ const user = new Schema({
       type: 'String',
       required: true
     },
-    
 })
 
 const model  = mongoose.model('user', user);

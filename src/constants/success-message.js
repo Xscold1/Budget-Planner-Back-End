@@ -34,6 +34,18 @@ const successMessage = {
     message:'Login Successfully'
   },
 
+  FETCH_SUCCESS:{
+    status: STATUS.OK,
+    statusCode: STATUS_CODE.SUCCESS,
+    message: 'Fetched Successfully',
+  },
+
+  EXPENSE_ADDED_SUCCESS:{
+    status: STATUS.OK,
+    statusCode: STATUS_CODE.SUCCESS,
+    message: 'Expense Added Successfully',
+  },
+  
   UPDATE_NOTIFICATION:{
     status: STATUS.OK,
     statusCode: STATUS_CODE.SUCCESS,

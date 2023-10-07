@@ -23,7 +23,7 @@ const EXPENSE_ALLOCATOR = async (req, res) => {
   try {
     const response = await budgetService.EXPENSE_ALLOCATOR(req.body);
 
-    return res.json({...SUCCESS_MESSAGE.USER_SUCCESS_ALLOCATION, response});
+    return res.json({...SUCCESS_MESSAGE.EXPENSE_ADDED_SUCCESS, response});
   } catch (error) {
     console.log(error);
     if(error.message) return res.json(error);
@@ -32,13 +32,38 @@ const EXPENSE_ALLOCATOR = async (req, res) => {
 
 const GET_BUDGET_PLANNER = async (req, res) =>{
   try {
-    
+    const response  = await budgetService.GET_BUDGET_PLANNER(req.query)
+
+    return res.json({...SUCCESS_MESSAGE.USER_SUCCESS_ALLOCATION, response});
+
   } catch (error) {
-    
+    console.log(error);
+    if(error.message) return res.json(error);
   }
 }
 
-const GET_EXPENSES = async (req, res) =>{
+const EDIT_BUDGET_PLANNER = async (req, res) =>{
+  try {
+    const response = await budgetService.EDIT_BUDGET_PLANNER(req.body, req.query)
+    
+    return res.json({...SUCCESS_MESSAGE.UPDATE_NOTIFICATION, response});
+  } catch (error) {
+    console.log(error);
+    if(error.message) return res.json(error);
+  }
+}
+
+const GET_TRANSACTION = async (req, res) =>{
+  try {
+    const response = await budgetService.GET_TRANSACTION(req.query)
+    return res.json({...SUCCESS_MESSAGE.FETCH_SUCCESS, response});
+  } catch (error) {
+    console.log(error);
+    if(error.message) return res.json(error);
+  }
+}
+
+const GET_INSIGHT = async (req, res) =>{
   try {
     
   } catch (error) {
@@ -51,5 +76,7 @@ module.exports = {
   BUDGET_PLANNER_ALLOCATOR,
   EXPENSE_ALLOCATOR,
   GET_BUDGET_PLANNER,
-  GET_EXPENSES
+  GET_TRANSACTION,
+  EDIT_BUDGET_PLANNER,
+  GET_INSIGHT
 }
