@@ -39,8 +39,8 @@ const LOGIN = async (reqBody) => {
 
     if(!findUser || findUser === null) throw (ERROR_MESSAGE.USER_ERROR_DO_NOT_EXIST)
 
-    const comparePassword = bcrypt.compare(password,findUser.password)
-
+    const comparePassword = await bcrypt.compare(password, findUser.password)
+    
     if (!comparePassword) throw(ERROR_MESSAGE.USER_ERROR_INVALID_PASSWORD)
 
     return findUser;

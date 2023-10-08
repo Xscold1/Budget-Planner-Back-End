@@ -52,7 +52,17 @@ const EXPENSE_ALLOCATOR = async (reqBody) => {
     }
 
     const newExpense = await EXPENSES.create(expensePayload)
+    
+    // Update Budget if new expense was added
+    const curBudget = await BUDGET.findOne({userId: userId})
 
+    const expense = Number(curBudget.totalExpenses) + Number(amount);
+    
+    await BUDGET.findOneAndUpdate({userId: userId}, {
+      totalExpenses: expense,
+      remainingBudget: Number(curBudget.totalBudget) - Number(expense),
+    })
+    
     return newExpense;
   } catch (error) {
     throw error;
@@ -61,17 +71,15 @@ const EXPENSE_ALLOCATOR = async (reqBody) => {
 
 const GET_BUDGET_PLANNER = async (reqQuery) => {
   try {
-
     const {email} = reqQuery
 
     const findUser = await USER.findOne({email: email})
-
-    const userId = findUser._id
+    
+    const userId = findUser._id;
 
     const findBudget = await BUDGET.findOne({userId: userId}, { '_id': false})
 
     return findBudget;
-
   } catch (error) {
     throw error;
   }
@@ -101,7 +109,7 @@ const GET_TRANSACTION = async (reqQuery) =>{
 
     const findUser = await USER.findOne({email: email})
 
-    const userId = findUser._id
+    const userId = findUser._id;
 
     if(type === 'monthly'){
       const getExpenses = await EXPENSES.aggregate([{$match:{userId:userId,}}, {$group:{_id:{month:{$month:"$createdAt"}},expenses_this_month:{
