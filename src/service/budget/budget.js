@@ -143,8 +143,23 @@ const GET_TRANSACTION = async (reqQuery) =>{
 
     const userId = findUser._id;
 
+    const monthsConversion = {
+      '1': "January",
+      '2': "February",
+      '3': "March",
+      '4': "April",
+      '5': "May",
+      '6': "June",
+      '7': "July",
+      '8': "August",
+      '9': "September",
+      '10': "October",
+      '11': "November",
+      '12': "December"
+    };
+
     if(type === 'monthly'){
-      const getExpenses = await EXPENSES.aggregate([{$match:{userId:userId,}}, {$group:{_id:{month:{$month:"$createdAt"}},expenses_this_month:{
+      const getExpenses = await EXPENSES.aggregate([{$match:{userId:userId}}, {$group:{_id:{month:{$month:"$createdAt"}, year: { $year: "$createdAt" }},expenses_this_month:{
             $push: {
               category:"$category",
               name:"$name",
@@ -157,9 +172,23 @@ const GET_TRANSACTION = async (reqQuery) =>{
         }
       }
     ])
-      return getExpenses
+      for (data of getExpenses) {
+        const dateContainer = {}
+        let totalExpense = 0
+        const dates = monthsConversion[data._id.month]
+        if(dateContainer[dates] === undefined) {
+            dateContainer[dates] = {}
+        }
+        // const mapAmount = data.map(dataAmount => data.ex)
+        if(Object.keys(dateContainer).toString() === dates){
+          dateContainer[dates + " " + data._id.year] = data.expenses_this_month
+        }
+        console.log(dateContainer)
+        return dateContainer
+      }
+      
     }else if (type === 'yearly'){
-      const getExpenses = await EXPENSES.aggregate([{$match:{userId:userId,}}, {$group:{_id:{year:{$year:"$createdAt"}},expenses_this_year:{
+      const getExpenses = await EXPENSES.aggregate([{$match:{userId:userId, }}, {$group:{_id:{year:{$year:"$createdAt"}},expenses_this_year:{
             $push: {
               category:"$category",
               name:"$name",
@@ -202,6 +231,21 @@ const GET_INSIGHT = async (reqQuery) =>{
   try {
     const {email, type} = reqQuery
 
+    const monthsConversion = {
+      '1': "January",
+      '2': "February",
+      '3': "March",
+      '4': "April",
+      '5': "May",
+      '6': "June",
+      '7': "July",
+      '8': "August",
+      '9': "September",
+      '10': "October",
+      '11': "November",
+      '12': "December"
+    };
+
     const findUser = await USER.findOne({email: email})
     const userId = findUser._id;
 
@@ -219,14 +263,21 @@ const GET_INSIGHT = async (reqQuery) =>{
         }
       }
     ])
-    const mapExpenses = getExpenses.map(data=>{
-      const mapSubArray = data.expenses_this_month.map(subData=>{
-        const dateContainer = {}
-      })
-    })
+
+    for (data of getExpenses) {
+      const dateContainer = {}
+      let totalExpense = 0
+      const dates = monthsConversion[data._id.month]
+      if(dateContainer[dates] === undefined) {
+          dateContainer[dates] = {}
+      }
+      // const mapAmount = data.map(dataAmount => data.ex)
+      if(Object.keys(dateContainer).toString() === dates){
+        dateContainer[dates] = data.expenses_this_month
+      }
+    }
     return getExpenses
   }
-
   } catch (error) {
     throw error;
   }

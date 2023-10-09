@@ -16,6 +16,10 @@ const user = new Schema({
       type: 'String',
       required: true
     },
+    ifBudgetAllocationExists:{
+      type: 'Boolean',
+      default: false
+    }
 })
 
 const model  = mongoose.model('user', user);

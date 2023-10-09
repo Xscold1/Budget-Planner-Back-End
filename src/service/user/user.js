@@ -1,6 +1,7 @@
 
 //models
 const USER = require('../../models/user-model');
+const BUDGET = require('../../models/budget-model');
 
 //constants
 const ERROR_MESSAGE  = require('../../constants/error-message');
@@ -35,12 +36,20 @@ const LOGIN = async (reqBody) => {
   try {
     const {email, password, userName} = reqBody
 
-    const findUser = await USER.findOne({$or: [{email:email}, {userName:userName}]})
+    const findUser = await USER.findOne({email:email})
+
+    const userId = findUser._id
 
     if(!findUser || findUser === null) throw (ERROR_MESSAGE.USER_ERROR_DO_NOT_EXIST)
 
     const comparePassword = await bcrypt.compare(password, findUser.password)
-    
+
+    const checkBudgetIfExist = await BUDGET.findOne({userId:userId})
+
+    if(checkBudgetIfExist) {
+      await USER.findOneAndUpdate({email:email}, {$set:{ifBudgetAllocationExists:"true"}} , {new:true})
+    }
+
     if (!comparePassword) throw(ERROR_MESSAGE.USER_ERROR_INVALID_PASSWORD)
 
     return findUser;
