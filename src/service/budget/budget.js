@@ -99,11 +99,20 @@ const EDIT_BUDGET_PLANNER = async (reqBody, reqQuery) =>{
 
     const {email} = reqQuery
 
+    const {totalBudget} = reqBody
+
     const findUser = await USER.findOne({email: email})
 
     const userId = findUser._id
 
-    const updateBudget = await BUDGET.findOneAndUpdate({userId:userId}, reqBody , {new:true})
+    const findBudget = await BUDGET.findOne({userId: userId})
+
+    const payLoad = {
+      totalBudget: totalBudget,
+      remainingBudget: totalBudget - findBudget.totalExpenses
+    }
+
+    const updateBudget = await BUDGET.findOneAndUpdate({userId:userId}, payLoad , {new:true})
 
     return updateBudget;
   } catch (error) {
@@ -119,13 +128,7 @@ const EDIT_CATEGORY_PLANNER = async (reqBody, reqQuery) =>{
 
     const userId = findUser._id
 
-    const findBudget = await BUDGET.findOne({userId: userId})
-    const payLoad = {
-      totalBudget: reqBody,
-      remainingBudget: reqBody - findBudget.remainingBudget
-    }
-    
-    const updateBudgetCategory = await BUDGET.updateOne({userId:userId}, payLoad ,{new:true})
+    const updateBudgetCategory = await BUDGET.updateOne({userId:userId}, reqBody ,{new:true})
 
     return updateBudgetCategory;
 
