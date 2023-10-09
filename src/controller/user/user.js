@@ -27,12 +27,13 @@ const REGISTER = async (req , res ) => {
 const LOGIN = async (req , res ) => {
   try {
 
-    const response = await userService.LOGIN(req.body); 
+    const {error, value } =  userSchema.validate(req.body)
+
+    const response = await userService.LOGIN(value); 
 
     return res.json({...SUCCESS_MESSAGE.USER_LOGIN_SUCCESS, response});
 
   } catch (error) {
-    console.log(error);
     if(error.message) return res.json(error);
 
     return res.json(ERROR_MESSAGE.GENERAL_ERROR_REQUEST);

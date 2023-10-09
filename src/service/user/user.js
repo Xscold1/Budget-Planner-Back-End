@@ -11,8 +11,8 @@ const bcrypt = require('bcrypt');
 const saltRounds = 10
 
 //utils
-const {toLower} = require('../../utils/lowerCase');
 const checkEmail = require('../../utils/checkEmailIfExist')
+const findUser = require('../../utils/findUser')
 
 const REGISTER = async (reqBody) => {
   try {
@@ -23,8 +23,8 @@ const REGISTER = async (reqBody) => {
     const hashPassword = bcrypt.hashSync(password,saltRounds)
 
     const userPayload = {
-      email:email,
-      userName:userName,
+      email:email.toLowerCase(),
+      userName:userName.toLowerCase(),
       password:hashPassword
     }
     const user = await USER.create(userPayload)
@@ -37,21 +37,15 @@ const REGISTER = async (reqBody) => {
 
 const LOGIN = async (reqBody) => {
   try {
-    const {email, password, userName} = reqBody
+    const {email, password} = reqBody
 
-    const findUser = await USER.findOne({email:email})
+    const userEmail = email.toLowerCase()
 
-    const userId = findUser._id
+    const findUser = await USER.findOne({email:userEmail})
 
     if(!findUser || findUser === null) throw (ERROR_MESSAGE.USER_ERROR_DO_NOT_EXIST)
 
     const comparePassword = await bcrypt.compare(password, findUser.password)
-
-    const checkBudgetIfExist = await BUDGET.findOne({userId:userId})
-
-    if(checkBudgetIfExist) {
-      await USER.findOneAndUpdate({email:email}, {$set:{ifBudgetAllocationExists:"true"}} , {new:true})
-    }
 
     if (!comparePassword) throw(ERROR_MESSAGE.USER_ERROR_INVALID_PASSWORD)
 
