@@ -20,8 +20,8 @@ const REGISTER = async (reqBody) => {
     const hashPassword = bcrypt.hashSync(password,saltRounds)
 
     const userPayload = {
-      email:email.toLowerCase(),
-      userName:userName.toLowerCase(),
+      email:email,
+      userName:userName,
       password:hashPassword
     }
     const user = await USER.create(userPayload)

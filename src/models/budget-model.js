@@ -7,11 +7,6 @@ const budget = new Schema({
       required: true,
       default: Date.now()
     },
-    endDate:{
-      type: 'Date',
-      required: true,
-      default: Date.now(),
-    },
     totalBudget: {
       type: 'Number',
       default: 0,

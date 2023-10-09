@@ -16,8 +16,8 @@ const BUDGET_PLANNER_ALLOCATOR = async (reqBody) =>{
 
     const budgetPayload = {
       startDate,
-      endDate,
       totalBudget,
+      remainingBudget: totalBudget,
       needs,
       wants,
       savings,
@@ -158,34 +158,22 @@ const GET_TRANSACTION = async (reqQuery) =>{
       '12': "December"
     };
 
-    if(type === 'monthly'){
-      const getExpenses = await EXPENSES.aggregate([{$match:{userId:userId}}, {$group:{_id:{month:{$month:"$createdAt"}, year: { $year: "$createdAt" }},expenses_this_month:{
-            $push: {
-              category:"$category",
-              name:"$name",
-              note:"$note",
-              type:"$expenseType",
-              amount:"$amount",
-              createdAt:"$createdAt"
+      if(type === 'monthly'){
+        const getExpenses = await EXPENSES.aggregate([{$match:{userId:userId,}}, {$group:{_id:{month:{$month:"$createdAt"}},expenses_this_month:{
+              $push: {
+                category:"$category",
+                name:"$name",
+                note:"$note",
+                type:"$expenseType",
+                amount:"$amount",
+                createdAt:"$createdAt",
+              }
             }
           }
         }
-      }
-    ])
-      for (data of getExpenses) {
-        const dateContainer = {}
-        let totalExpense = 0
-        const dates = monthsConversion[data._id.month]
-        if(dateContainer[dates] === undefined) {
-            dateContainer[dates] = {}
-        }
-        // const mapAmount = data.map(dataAmount => data.ex)
-        if(Object.keys(dateContainer).toString() === dates){
-          dateContainer[dates + " " + data._id.year] = data.expenses_this_month
-        }
-        console.log(dateContainer)
-        return dateContainer
-      }
+      ])
+
+      return getExpenses
       
     }else if (type === 'yearly'){
       const getExpenses = await EXPENSES.aggregate([{$match:{userId:userId, }}, {$group:{_id:{year:{$year:"$createdAt"}},expenses_this_year:{
@@ -264,6 +252,7 @@ const GET_INSIGHT = async (reqQuery) =>{
       }
     ])
 
+    const dateContainer = {}
     for (data of getExpenses) {
       const dateContainer = {}
       let totalExpense = 0
@@ -271,12 +260,14 @@ const GET_INSIGHT = async (reqQuery) =>{
       if(dateContainer[dates] === undefined) {
           dateContainer[dates] = {}
       }
-      // const mapAmount = data.map(dataAmount => data.ex)
+
       if(Object.keys(dateContainer).toString() === dates){
         dateContainer[dates] = data.expenses_this_month
       }
+      return dateContainer
     }
     return getExpenses
+    
   }
   } catch (error) {
     throw error;

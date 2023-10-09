@@ -40,6 +40,12 @@ const successMessage = {
     message: 'Fetched Successfully',
   },
 
+  FETCH_SUCCESS_NO_DATA:{
+    status: STATUS.OK,
+    statusCode: STATUS_CODE.SUCCESS,
+    message: 'No data available',
+  },
+
   EXPENSE_ADDED_SUCCESS:{
     status: STATUS.OK,
     statusCode: STATUS_CODE.SUCCESS,
