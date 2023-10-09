@@ -103,6 +103,38 @@ const EDIT_BUDGET_PLANNER = async (reqBody, reqQuery) =>{
   }
 }
 
+const EDIT_CATEGORY_PLANNER = async (reqBody, reqQuery) =>{
+  try {
+    const {email} = reqQuery
+
+    const findUser = await USER.findOne({email: email})
+
+    const userId = findUser._id
+    
+    const updateBudgetCategory = await BUDGET.updateOne({userId:userId}, reqBody ,{new:true})
+
+    return updateBudgetCategory;
+
+  } catch (error) {
+    throw error;
+  }
+}
+
+const GET_CATEGORY_PLANNER = async (reqQuery) =>{
+  try {
+    const {email, type} = reqQuery
+
+    const findUser = await USER.findOne({email: email})
+
+    const userId = findUser._id
+
+    const findBudgetCategory = await BUDGET.findOne({userId: userId}).distinct(type)
+    return findBudgetCategory
+  } catch (error) {
+    throw error;
+  }
+}
+
 const GET_TRANSACTION = async (reqQuery) =>{
   try {
     const {email, type} = reqQuery
@@ -166,18 +198,46 @@ const GET_TRANSACTION = async (reqQuery) =>{
   }
 }
 
-const GET_INSIGHT = async (reqBody) =>{
+const GET_INSIGHT = async (reqQuery) =>{
   try {
-    
+    const {email, type} = reqQuery
+
+    const findUser = await USER.findOne({email: email})
+    const userId = findUser._id;
+
+    if(type === 'monthly'){
+      const getExpenses = await EXPENSES.aggregate([{$match:{userId:userId,}}, {$group:{_id:{month:{$month:"$createdAt"}},expenses_this_month:{
+            $push: {
+              category:"$category",
+              name:"$name",
+              note:"$note",
+              type:"$expenseType",
+              amount:"$amount",
+              createdAt:"$createdAt",
+            }
+          }
+        }
+      }
+    ])
+    const mapExpenses = getExpenses.map(data=>{
+      const mapSubArray = data.expenses_this_month.map(subData=>{
+        const dateContainer = {}
+      })
+    })
+    return getExpenses
+  }
+
   } catch (error) {
     throw error;
   }
 }
 module.exports = {
-  BUDGET_PLANNER_ALLOCATOR,
+  BUDGET_PLANNER_ALLOCATOR, 
   EXPENSE_ALLOCATOR,
   GET_BUDGET_PLANNER,
+  GET_CATEGORY_PLANNER,
   GET_TRANSACTION,
   EDIT_BUDGET_PLANNER,
+  EDIT_CATEGORY_PLANNER,
   GET_INSIGHT
 }
