@@ -12,10 +12,13 @@ const saltRounds = 10
 
 //utils
 const {toLower} = require('../../utils/lowerCase');
+const checkEmail = require('../../utils/checkEmailIfExist')
 
 const REGISTER = async (reqBody) => {
   try {
     const {email, password, userName} = reqBody
+
+    checkEmail.checkEmailIfExist(email)
 
     const hashPassword = bcrypt.hashSync(password,saltRounds)
 

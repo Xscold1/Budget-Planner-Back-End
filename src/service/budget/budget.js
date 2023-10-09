@@ -3,14 +3,20 @@ const BUDGET = require('../../models/budget-model');
 const EXPENSES = require('../../models/expense-model');
 const USER = require('../../models/user-model');
 
+//constants
+const ERROR_MESSAGE  = require('../../constants/error-message');
+
 //utils
 const findUserId = require('../../utils/findUser');
+const formatExpenses = require('../../utils/formatExpenses');
 
 const BUDGET_PLANNER_ALLOCATOR = async (reqBody) =>{
   try {
-    const {startDate, endDate, totalBudget,needs,wants,savings, budgetType, email} = reqBody
+    const {startDate, totalBudget,needs,wants,savings, budgetType, email} = reqBody
 
     const findUser = await USER.findOne({email: email})
+
+    if(findUser.ifBudgetAllocationExists === true) throw (ERROR_MESSAGE.BUDGET_ALREADY_ALLOCATED)
 
     const userId = findUser._id
 
@@ -26,6 +32,8 @@ const BUDGET_PLANNER_ALLOCATOR = async (reqBody) =>{
     }
 
     const budget = await BUDGET.create(budgetPayload)
+
+    await USER.updateOne({email: email}, {$set: {ifBudgetAllocationExists:true}}, {new : true})
 
     return budget;
 
@@ -110,8 +118,14 @@ const EDIT_CATEGORY_PLANNER = async (reqBody, reqQuery) =>{
     const findUser = await USER.findOne({email: email})
 
     const userId = findUser._id
+
+    const findBudget = await BUDGET.findOne({userId: userId})
+    const payLoad = {
+      totalBudget: reqBody,
+      remainingBudget: reqBody - findBudget.remainingBudget
+    }
     
-    const updateBudgetCategory = await BUDGET.updateOne({userId:userId}, reqBody ,{new:true})
+    const updateBudgetCategory = await BUDGET.updateOne({userId:userId}, payLoad ,{new:true})
 
     return updateBudgetCategory;
 
@@ -173,7 +187,15 @@ const GET_TRANSACTION = async (reqQuery) =>{
         }
       ])
 
-      return getExpenses
+      const categories = getExpenses.map((getExpenses) => {
+        const totalExpenses = formatExpenses.formatExpenses(getExpenses.expenses_this_month)
+        return {
+          month: monthsConversion[getExpenses._id.month],
+          expenses_this_month: getExpenses.expenses_this_month,
+          totalExpenses: totalExpenses
+        }
+      });
+      return categories;
       
     }else if (type === 'yearly'){
       const getExpenses = await EXPENSES.aggregate([{$match:{userId:userId, }}, {$group:{_id:{year:{$year:"$createdAt"}},expenses_this_year:{
@@ -189,9 +211,17 @@ const GET_TRANSACTION = async (reqQuery) =>{
         }
       }
     ])
-      return getExpenses
+    const categories = getExpenses.map((getExpenses) => {
+      const totalExpenses = formatExpenses.formatExpenses(getExpenses.expenses_this_year)
+      return {
+        year: monthsConversion[getExpenses._id.year],
+        expenses_this_year: getExpenses.expenses_this_year,
+        totalExpenses: totalExpenses
+      }
+    });
+    return categories;
     }else if (type === 'weekly'){
-      const getExpenses = await EXPENSES.aggregate([{$match:{userId:userId,}}, {$group:{_id:{week:{$week:"$createdAt"}},expenses_this_week:{
+      const getExpenses = await EXPENSES.aggregate([{$match:{userId:userId}}, {$group:{_id:{week:{$week:"$createdAt"}},expenses_this_week:{
             $push: {
               category:"$category",
               name:"$name",
@@ -204,7 +234,15 @@ const GET_TRANSACTION = async (reqQuery) =>{
         }
       }
     ])
-      return getExpenses
+    const categories = getExpenses.map((getExpenses) => {
+      const totalExpenses = formatExpenses.formatExpenses(getExpenses.expenses_this_week)
+      return {
+        year: monthsConversion[getExpenses._id.week],
+        expenses_this_week: getExpenses.expenses_this_week,
+        totalExpenses: totalExpenses
+      }
+    });
+    return categories;
     }else {
       const getExpenses = await EXPENSES.find({userId:userId})
       return getExpenses
@@ -251,23 +289,58 @@ const GET_INSIGHT = async (reqQuery) =>{
         }
       }
     ])
-
-    const dateContainer = {}
-    for (data of getExpenses) {
-      const dateContainer = {}
-      let totalExpense = 0
-      const dates = monthsConversion[data._id.month]
-      if(dateContainer[dates] === undefined) {
-          dateContainer[dates] = {}
+      const categories = getExpenses.map((getExpenses) => {
+        const totalExpenses = formatExpenses.formatExpenses(getExpenses.expenses_this_month)
+        return {
+          month: monthsConversion[getExpenses._id.month],
+          expenses: totalExpenses
+        }
+      });
+    return categories
+  }else if (type === 'yearly'){
+    const getExpenses = await EXPENSES.aggregate([{$match:{userId:userId, }}, {$group:{_id:{year:{$year:"$createdAt"}},expenses_this_year:{
+          $push: {
+            category:"$category",
+            name:"$name",
+            note:"$note",
+            type:"$expenseType",
+            amount:"$amount",
+            createdAt:"$createdAt"
+          }
+        }
       }
-
-      if(Object.keys(dateContainer).toString() === dates){
-        dateContainer[dates] = data.expenses_this_month
-      }
-      return dateContainer
     }
-    return getExpenses
-    
+  ])
+  const categories = getExpenses.map((getExpenses) => {
+    const totalExpenses = formatExpenses.formatExpenses(getExpenses.expenses_this_year)
+    return {
+      year: getExpenses._id.year,
+      expenses: totalExpenses
+    }
+  });
+    return categories
+  }else if (type === 'weekly'){
+    const getExpenses = await EXPENSES.aggregate([{$match:{userId:userId,}}, {$group:{_id:{week:{$week:"$createdAt"}},expenses_this_week:{
+          $push: {
+            category:"$category",
+            name:"$name",
+            note:"$note",
+            type:"$expenseType",
+            amount:"$amount",
+            createdAt:"$createdAt"
+          }
+        }
+      }
+    }
+  ])
+    const categories = getExpenses.map((getExpenses) => {
+      const totalExpenses = formatExpenses.formatExpenses(getExpenses.expenses_this_week)
+      return {
+        weekly: getExpenses._id.week,
+        expenses: totalExpenses
+      }
+    });
+  return categories
   }
   } catch (error) {
     throw error;

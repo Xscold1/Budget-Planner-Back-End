@@ -48,6 +48,12 @@ const errorMessage = {
     status: STATUS.FAILED,
     statusCode: STATUS_CODE.VALIDATION_ERROR,
     message: 'Invalid password.',
+  },
+  //budget error
+  BUDGET_ALREADY_ALLOCATED:{
+    status: STATUS.FAILED,
+    statusCode: STATUS_CODE.FAILED,
+    message: 'User already allocated budget.',
   }
   
 }
