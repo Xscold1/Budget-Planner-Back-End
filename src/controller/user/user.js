@@ -17,9 +17,8 @@ const REGISTER = async (req , res ) => {
     return res.json({...SUCCESS_MESSAGE.USER_SUCCESS_REGISTRATION, response});
       
   } catch (error) {
-
+    if (error.code === 11000) return res.json(ERROR_MESSAGE.USER_ERROR_TAKEN)
     if(error.message) return res.json(error);
-
     return res.json(ERROR_MESSAGE.GENERAL_ERROR_REQUEST);
   }
 }

@@ -9,7 +9,6 @@ const user = new Schema({
     },
     userName: {
       type: 'String',
-      index: { unique: true },
       required: true
     },
     password: {
