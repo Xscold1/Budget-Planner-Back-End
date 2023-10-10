@@ -220,6 +220,9 @@ const GET_TRANSACTION = async (reqQuery) =>{
         getExpenses,
         totalSum:sum
       } 
+    }else {
+      const getExpenses = await EXPENSES.find({userId:userId})
+      return getExpenses
     }
     
     
@@ -267,11 +270,12 @@ const GET_INSIGHT = async (reqQuery) =>{
     ])
       const categories = getExpenses.map((getExpenses) => {
         let totalExpenses = formatExpenses.formatExpenses(getExpenses.expenses_this_month)
+        let sortExpenses = totalExpenses.sort((amount1, amount2) => {
+          return amount2.amount - amount1.amount;
+        })
         return {
           month: monthsConversion[getExpenses._id.month],
-          expenses: totalExpenses.sort((amount1, amount2) => {
-            return amount2.amount - amount1.amount;
-          })
+          expenses: sortExpenses.slice(0, 3)
         }
       });
     return categories
@@ -291,11 +295,12 @@ const GET_INSIGHT = async (reqQuery) =>{
   ])
   const categories = getExpenses.map((getExpenses) => {
     const totalExpenses = formatExpenses.formatExpenses(getExpenses.expenses_this_year)
+    let sortExpenses = totalExpenses.sort((amount1, amount2) => {
+      return amount2.amount - amount1.amount;
+    })
     return {
       year: getExpenses._id.year,
-      expenses: totalExpenses.sort((amount1, amount2) => {
-        return amount2.amount - amount1.amount;
-      })
+      expenses: sortExpenses.slice(0, 3)
     }
   });
     return categories
@@ -315,11 +320,12 @@ const GET_INSIGHT = async (reqQuery) =>{
   ])
     const categories = getExpenses.map((getExpenses) => {
       const totalExpenses = formatExpenses.formatExpenses(getExpenses.expenses_this_week)
+      let sortExpenses = totalExpenses.sort((amount1, amount2) => {
+        return amount2.amount - amount1.amount;
+      })
       return {
         weekly: getExpenses._id.week,
-        expenses: totalExpenses.sort((amount1, amount2) => {
-          return amount2.amount - amount1.amount
-        })
+        expenses: sortExpenses.slice(0, 3)
       }
     });
   return categories
