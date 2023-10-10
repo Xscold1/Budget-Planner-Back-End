@@ -194,7 +194,7 @@ const GET_TRANSACTION = async (reqQuery) =>{
     }else if (type === 'weekly'){
       const {startDate, endDate} = reqQuery
 
-      const getExpenses = await EXPENSES.find({userId:userId, createdAt:{$lte:newEndDate, $gte:newStartDate}}).sort({createdAt: -1})
+      const getExpenses = await EXPENSES.find({userId:userId, createdAt:{$lte:endDate, $gte:startDate}}).sort({createdAt: -1})
 
         let sum = 0
 
