@@ -164,7 +164,7 @@ const GET_TRANSACTION = async (reqQuery) =>{
 
       if(type === 'monthly'){
         const {month, year} = reqQuery
-        const getExpenses = await EXPENSES.find({userId:userId , $expr:{$and:[{$eq:[{"$month":"$createdAt"}, month]} ,{$eq:[{"$year":"$createdAt"}, year]}],  }})
+        const getExpenses = await EXPENSES.find({userId:userId , $expr:{$and:[{$eq:[{"$month":"$createdAt"}, month]} ,{$eq:[{"$year":"$createdAt"}, year]}],  }}).sort({createdAt: -1})
 
         let sum = 0
 
@@ -179,7 +179,7 @@ const GET_TRANSACTION = async (reqQuery) =>{
       
     }else if (type === 'yearly'){
         const {year} = reqQuery
-        const getExpenses = await EXPENSES.find({userId:userId , $expr:{$and:[{$eq:[{"$year":"$createdAt"}, year]}]}})
+        const getExpenses = await EXPENSES.find({userId:userId , $expr:{$and:[{$eq:[{"$year":"$createdAt"}, year]}]}}).sort({createdAt: -1})
 
         let sum = 0
 
@@ -194,10 +194,7 @@ const GET_TRANSACTION = async (reqQuery) =>{
     }else if (type === 'weekly'){
       const {startDate, endDate} = reqQuery
 
-      const newEndDate = endDate.concat("T23:59:59.000+00:00")
-      const newStartDate = startDate.concat("T00:00:00.000+00:00")
-
-      const getExpenses = await EXPENSES.find({userId:userId, createdAt:{$lte:newEndDate, $gte:newStartDate}})
+      const getExpenses = await EXPENSES.find({userId:userId, createdAt:{$lte:newEndDate, $gte:newStartDate}}).sort({createdAt: -1})
 
         let sum = 0
 
@@ -269,10 +266,12 @@ const GET_INSIGHT = async (reqQuery) =>{
       }
     ])
       const categories = getExpenses.map((getExpenses) => {
-        const totalExpenses = formatExpenses.formatExpenses(getExpenses.expenses_this_month)
+        let totalExpenses = formatExpenses.formatExpenses(getExpenses.expenses_this_month)
         return {
           month: monthsConversion[getExpenses._id.month],
-          expenses: totalExpenses
+          expenses: totalExpenses.sort((amount1, amount2) => {
+            return amount2.amount - amount1.amount;
+          })
         }
       });
     return categories
@@ -294,7 +293,9 @@ const GET_INSIGHT = async (reqQuery) =>{
     const totalExpenses = formatExpenses.formatExpenses(getExpenses.expenses_this_year)
     return {
       year: getExpenses._id.year,
-      expenses: totalExpenses
+      expenses: totalExpenses.sort((amount1, amount2) => {
+        return amount2.amount - amount1.amount;
+      })
     }
   });
     return categories
@@ -316,7 +317,9 @@ const GET_INSIGHT = async (reqQuery) =>{
       const totalExpenses = formatExpenses.formatExpenses(getExpenses.expenses_this_week)
       return {
         weekly: getExpenses._id.week,
-        expenses: totalExpenses
+        expenses: totalExpenses.sort((amount1, amount2) => {
+          return amount2.amount - amount1.amount
+        })
       }
     });
   return categories
