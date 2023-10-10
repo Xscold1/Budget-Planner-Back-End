@@ -207,8 +207,11 @@ const GET_TRANSACTION = async (reqQuery) =>{
         sum
       }
     }else if (type === 'daily'){
-      const {day} = reqQuery
-      const getExpenses = await EXPENSES.find({userId:userId , createdAt:{$gte:day}})
+      const { day } = reqQuery
+
+      const endDate = day.concat("T23:59:59.000+00:00")
+      const startDate = day.concat("T00:00:00.000+00:00")
+      const getExpenses = await EXPENSES.find({userId:userId , createdAt:{$gte:startDate, $lte:endDate}})
 
       let sum = 0
 
