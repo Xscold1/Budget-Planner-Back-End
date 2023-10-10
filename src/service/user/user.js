@@ -18,8 +18,10 @@ const REGISTER = async (reqBody) => {
   try {
     const {email, password, userName} = reqBody
 
-    checkEmail.checkEmailIfExist(email)
+    const checkIfExists = await USER.findOne({ email: email });
 
+    if (checkIfExists) throw new Error();
+    
     const hashPassword = bcrypt.hashSync(password,saltRounds)
 
     const userPayload = {
