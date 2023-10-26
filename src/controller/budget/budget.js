@@ -30,18 +30,6 @@ const EXPENSE_ALLOCATOR = async (req, res) => {
   }
 }
 
-const GET_BUDGET_PLANNER = async (req, res) =>{
-  try {
-    const response  = await budgetService.GET_BUDGET_PLANNER(req.query)
-
-    return res.json({...SUCCESS_MESSAGE.USER_SUCCESS_ALLOCATION, response});
-
-  } catch (error) {
-    console.log(error);
-    if(error.message) return res.json(error);
-  }
-}
-
 const EDIT_BUDGET_PLANNER = async (req, res) =>{
   try {
     const response = await budgetService.EDIT_BUDGET_PLANNER(req.body, req.query)
@@ -94,6 +82,18 @@ const GET_INSIGHT = async (req, res) =>{
   }
 }
 
+const GET_BUDGET_PLANNER = async (req, res) =>{
+  try {
+    const response  = await budgetService.GET_BUDGET_PLANNER(req.query)
+
+    return res.json({...SUCCESS_MESSAGE.USER_SUCCESS_ALLOCATION, response});
+
+  } catch (error) {
+    console.log(error);
+    if(error.message) return res.json(error);
+  }
+}
+
 
 module.exports = {
   BUDGET_PLANNER_ALLOCATOR,
@@ -103,5 +103,5 @@ module.exports = {
   GET_TRANSACTION,
   EDIT_BUDGET_PLANNER,
   EDIT_CATEGORY_PLANNER,
-  GET_INSIGHT
+  GET_INSIGHT,
 }

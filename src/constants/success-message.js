@@ -28,6 +28,12 @@ const successMessage = {
     message:'Logout Successfully'
   },
 
+  DEBT_CREATED_SUCCESSFULLY:{
+    status: STATUS.OK,
+    statusCode:STATUS_CODE.SUCCESS,
+    message:'Debt created successfully'
+  },
+
   USER_LOGIN_SUCCESS: {
     status: STATUS.OK,
     statusCode:STATUS_CODE.SUCCESS,

@@ -12,7 +12,7 @@ const saltRounds = 10
 
 //utils
 const checkEmail = require('../../utils/checkEmailIfExist')
-const findUser = require('../../utils/findUser')
+const findUserId = require('../../utils/findUserId');
 
 const REGISTER = async (reqBody) => {
   try {

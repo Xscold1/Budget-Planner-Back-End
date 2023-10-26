@@ -54,8 +54,15 @@ const errorMessage = {
     status: STATUS.FAILED,
     statusCode: STATUS_CODE.FAILED,
     message: 'User already allocated budget.',
-  }
+  },
   
+
+  //debt error
+  DEBT_ALEADY_EXIST:{
+    status: STATUS.FAILED,
+    statusCode: STATUS_CODE.FAILED,
+    message: 'You still have an outstanding balance to this person',
+  }
 }
 
 

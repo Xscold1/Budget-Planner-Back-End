@@ -7,7 +7,7 @@ const USER = require('../../models/user-model');
 const ERROR_MESSAGE  = require('../../constants/error-message');
 
 //utils
-const findUserId = require('../../utils/findUser');
+const findUserId = require('../../utils/findUserId');
 const formatExpenses = require('../../utils/formatExpenses');
 const getDateToday = require('../../utils/getDateToday');
 
@@ -227,9 +227,6 @@ const GET_TRANSACTION = async (reqQuery) =>{
       const getExpenses = await EXPENSES.find({userId:userId})
       return getExpenses
     }
-    
-    
-
   } catch (error) {
     throw error;
   }
@@ -237,7 +234,7 @@ const GET_TRANSACTION = async (reqQuery) =>{
 
 const GET_INSIGHT = async (reqQuery) =>{
   try {
-    const {email, type} = reqQuery
+    const {email, type, year, month, startDate, endDate} = reqQuery
 
     const monthsConversion = {
       '1': "January",
@@ -258,7 +255,7 @@ const GET_INSIGHT = async (reqQuery) =>{
     const userId = findUser._id;
 
     if(type === 'monthly'){
-      const getExpenses = await EXPENSES.aggregate([{$match:{userId:userId,}}, {$group:{_id:{month:{$month:"$createdAt"}},expenses_this_month:{
+      const getExpenses = await EXPENSES.aggregate([{$match:{userId:userId }}, {$group:{_id:{month:{$month:"$createdAt"}},expenses_this_month:{
             $push: {
               category:"$category",
               name:"$name",
@@ -283,7 +280,7 @@ const GET_INSIGHT = async (reqQuery) =>{
       });
     return categories
   }else if (type === 'yearly'){
-    const getExpenses = await EXPENSES.aggregate([{$match:{userId:userId, }}, {$group:{_id:{year:{$year:"$createdAt"}},expenses_this_year:{
+    const getExpenses = await EXPENSES.aggregate([{$match:{userId:userId}}, {$group:{_id:{year:{$year:"$createdAt"}},expenses_this_year:{
           $push: {
             category:"$category",
             name:"$name",
@@ -308,7 +305,8 @@ const GET_INSIGHT = async (reqQuery) =>{
   });
     return categories
   }else if (type === 'weekly'){
-    const getExpenses = await EXPENSES.aggregate([{$match:{userId:userId,}}, {$group:{_id:{week:{$week:"$createdAt"}},expenses_this_week:{
+    const {startDate, endDate} = reqQuery
+    const getExpenses = await EXPENSES.aggregate([{$match:{userId:userId, createdAt:{$lte:endDate, $gte:startDate}  }}, {$group:{_id:{week:{$week:"$createdAt"}},expenses_this_week:{
           $push: {
             category:"$category",
             name:"$name",

@@ -32,6 +32,10 @@ const budget = new Schema({
           type: 'number',
           default: 0,
         },
+        iconId:{
+          type: 'String',
+          required: true
+        }
       }],
     wants:[{
       name: {
@@ -41,6 +45,10 @@ const budget = new Schema({
         type: 'number',
         default: 0,
       },
+      iconId:{
+        type: 'String',
+        required: true
+      }
     }],
     savings:[{
       name: {
@@ -50,6 +58,10 @@ const budget = new Schema({
         type: 'number',
         default: 0,
       },
+      iconId:{
+        type: 'String',
+        required: true
+      }
     }],
     userId:{
       type:mongoose.Schema.Types.ObjectId,
