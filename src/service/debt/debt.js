@@ -16,7 +16,7 @@ const BORROW_AND_LEND = async(reqBody , reqQuery) =>{
 
     const userId = await findUserId(email)
 
-    const checkIfDebtExist = await DEBT.findOne({userId:userId, name:name})
+    const checkIfDebtExist = await DEBT.findOne({userId:userId, name:name, debtType:debtType})
 
     if(checkIfDebtExist && checkIfDebtExist.status !== 'paid' ) {
       throw (ERROR_MESSAGE.DEBT_ALEADY_EXIST)
