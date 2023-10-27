@@ -63,10 +63,10 @@ const budget = new Schema({
         required: true
       }
     }],
-    userId:{
+    userId:[{
       type:mongoose.Schema.Types.ObjectId,
       ref: 'user'
-    }
+    }]
 })
 
 const model  = mongoose.model('budget', budget);

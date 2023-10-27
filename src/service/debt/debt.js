@@ -47,16 +47,16 @@ const RECEIVE_AND_PAY = async(reqBody, reqQuery) =>{
 
     const userId = await findUserId(email)
 
-    const {payments, name} = reqBody
+    const {payments, name, debtType} = reqBody
 
     const checkIfDebtIsPaid = await DEBT.findOne({userId:userId, name:name})
 
     if(checkIfDebtIsPaid.totalDebt <= 0 ){
-      const updateDebtStatus = await DEBT.findOneAndUpdate({userId:userId, name:name}, {status: "paid"}, {new: true})
+      const updateDebtStatus = await DEBT.findOneAndUpdate({userId:userId, name:name, debtType:debtType}, {status: "paid"}, {new: true})
       return updateDebtStatus
     }
 
-    const payDebt = await DEBT.findOneAndUpdate({userId:userId, name: name} , {$inc:{"balance": -payments.amount},$push:{payments:{ amount:payments.amount, paymentDate:getDateToday()}}}, {new: true})
+    const payDebt = await DEBT.findOneAndUpdate({userId:userId, name: name, debtType:debtType} , {$inc:{"balance": -payments.amount},$push:{payments:{ amount:payments.amount, paymentDate:getDateToday()}}}, {new: true})
 
     return payDebt
   } catch (error) {
