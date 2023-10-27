@@ -39,7 +39,52 @@ const LOGIN = async (req , res ) => {
   }
 }
 
+const EDIT_PROFILE = async (req , res ) => {
+  try {
+
+    const response = await userService.EDIT_PROFILE(req.body, req.query); 
+
+    return res.json({...SUCCESS_MESSAGE.USER_LOGIN_SUCCESS, response});
+
+  } catch (error) {
+    if(error.message) return res.json(error);
+
+    return res.json(ERROR_MESSAGE.GENERAL_ERROR_REQUEST);
+  }
+}
+
+const GET_USER = async (req , res ) => {
+  try {
+
+    const response = await userService.GET_USER(req.body); 
+
+    return res.json({...SUCCESS_MESSAGE.USER_LOGIN_SUCCESS, response});
+
+  } catch (error) {
+    if(error.message) return res.json(error);
+
+    return res.json(ERROR_MESSAGE.GENERAL_ERROR_REQUEST);
+  }
+}
+
+const FORGOT_PASSWORD = async (req , res ) => {
+  try {
+
+    const response = await userService.FORGOT_PASSWORD(req.body); 
+
+    return res.json({...SUCCESS_MESSAGE.USER_LOGIN_SUCCESS, response});
+
+  } catch (error) {
+    if(error.message) return res.json(error);
+
+    return res.json(ERROR_MESSAGE.GENERAL_ERROR_REQUEST);
+  }
+}
+
 module.exports = {
   REGISTER,
   LOGIN,
+  EDIT_PROFILE,
+  GET_USER,
+  FORGOT_PASSWORD
 }
