@@ -167,10 +167,8 @@ const GET_CATEGORY_PLANNER = async (reqQuery) =>{
   try {
     const {email, type, budgetName} = reqQuery
 
-    const findUser = await USER.findOne({email: email})
-
-    const userId = findUser._id
-
+    const userId = await findUserId(email)
+    
     const findBudgetCategory = await BUDGET.findOne({userId: {$in:[userId]}, budgetName:budgetName}).distinct(type)
     return findBudgetCategory
   } catch (error) {
