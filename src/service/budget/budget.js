@@ -11,30 +11,32 @@ const findUserId = require('../../utils/findUserId');
 const formatExpenses = require('../../utils/formatExpenses');
 const getDateToday = require('../../utils/getDateToday');
 
-const BUDGET_PLANNER_ALLOCATOR = async (reqBody) =>{
+const BUDGET_PLANNER_ALLOCATOR = async (reqBody, reqQuery) =>{
   try {
-    const {startDate, totalBudget,needs,wants,savings, budgetType, email} = reqBody
 
-    const findUser = await USER.findOne({email: email})
+    const {email} = reqQuery
+    const {startDate, totalBudget,needs,wants,savings, budgetType, budgetName, iconId} = reqBody
 
-    if(findUser.ifBudgetAllocationExists === true) throw (ERROR_MESSAGE.BUDGET_ALREADY_ALLOCATED)
+    const checkIfNewUser = await USER.findOne({email: email})
 
-    const userId = findUser._id
+    if(checkIfNewUser.ifNewUser === true) await USER.updateOne({email: email}, {$set: {ifNewUser:false}})
+
+    const userId = checkIfNewUser._id
 
     const budgetPayload = {
       startDate,
+      budgetName,
       totalBudget,
       remainingBudget: totalBudget,
       needs,
       wants,
       savings,
       budgetType,
-      userId
+      iconId,
+      userId,
     }
 
     const budget = await BUDGET.create(budgetPayload)
-
-    await USER.updateOne({email: email}, {$set: {ifBudgetAllocationExists:true}}, {new : true})
 
     return budget;
 
@@ -43,9 +45,11 @@ const BUDGET_PLANNER_ALLOCATOR = async (reqBody) =>{
   }
 }
 
-const EXPENSE_ALLOCATOR = async (reqBody) => {
+const EXPENSE_ALLOCATOR = async (reqBody, reqQuery) => {
   try {
-    const {amount, name, note, email, type, category} = reqBody;
+
+    const {budgetName, email} = reqQuery
+    const {amount, name, note, type, category} = reqBody;
 
     const findUser = await USER.findOne({email: email})
 
@@ -56,6 +60,7 @@ const EXPENSE_ALLOCATOR = async (reqBody) => {
       name,
       category,
       note,
+      budgetName,
       expenseType:type,
       userId,
       createdAt: getDateToday()
@@ -64,11 +69,11 @@ const EXPENSE_ALLOCATOR = async (reqBody) => {
     const newExpense = await EXPENSES.create(expensePayload)
     
     // Update Budget if new expense was added
-    const curBudget = await BUDGET.findOne({userId: userId})
+    const curBudget = await BUDGET.findOne({userId: {$in:[userId]}, budgetName:budgetName})
 
     const expense = Number(curBudget.totalExpenses) + Number(amount);
     
-    await BUDGET.findOneAndUpdate({userId: userId}, {
+    await BUDGET.findOneAndUpdate({userId: {$in:[userId]}}, {
       totalExpenses: expense,
       remainingBudget: Number(curBudget.totalBudget) - Number(expense),
     })
@@ -79,42 +84,44 @@ const EXPENSE_ALLOCATOR = async (reqBody) => {
   }
 }
 
-const GET_BUDGET_PLANNER = async (reqQuery) => {
+const ADD_USER = async (reqBody, reqQuery) =>{
   try {
-    const {email} = reqQuery
+    const {userEmail} = reqBody
 
-    const findUser = await USER.findOne({email: email})
-    
-    const userId = findUser._id;
+    const {email, budgetName} = reqQuery
 
-    const findBudget = await BUDGET.findOne({userId: userId}, { '_id': false})
+    const userId = await findUserId(email)
 
-    return findBudget;
+    const findUser = await USER.findOne({email: userEmail})
+
+    if(!findUser) throw (ERROR_MESSAGE.USER_ERROR_DO_NOT_EXIST)
+
+    const addUserToBudget = await BUDGET.findOneAndUpdate({budgetName:budgetName, userId: {$in:[userId]}}, {$push: {userId: findUser._id}}, {new: true})
+
+    return addUserToBudget
   } catch (error) {
     throw error;
   }
 }
-
 
 const EDIT_BUDGET_PLANNER = async (reqBody, reqQuery) =>{
   try {
 
     const {email} = reqQuery
 
-    const {totalBudget} = reqBody
+    const {totalBudget, budgetName} = reqBody
 
-    const findUser = await USER.findOne({email: email})
+    const userId = findUserId(email)
 
-    const userId = findUser._id
-
-    const findBudget = await BUDGET.findOne({userId: userId})
+    const findBudget = await BUDGET.findOne({userId: userId, budgetName: budgetName})
 
     const payLoad = {
-      totalBudget: totalBudget,
+      budgetName,
+      totalBudget,
       remainingBudget: totalBudget - findBudget.totalExpenses
     }
 
-    const updateBudget = await BUDGET.findOneAndUpdate({userId:userId}, payLoad , {new:true})
+    const updateBudget = await BUDGET.findOneAndUpdate({userId:{$in:[userId]}, budgetName:budgetName}, payLoad , {new:true})
 
     return updateBudget;
   } catch (error) {
@@ -130,7 +137,7 @@ const EDIT_CATEGORY_PLANNER = async (reqBody, reqQuery) =>{
 
     const userId = findUser._id
 
-    const updateBudgetCategory = await BUDGET.updateOne({userId:userId}, reqBody ,{new:true})
+    const updateBudgetCategory = await BUDGET.updateOne({userId:{$in:[userId]}, budgetName:budgetName}, reqBody ,{new:true})
 
     return updateBudgetCategory;
 
@@ -139,15 +146,32 @@ const EDIT_CATEGORY_PLANNER = async (reqBody, reqQuery) =>{
   }
 }
 
+
+const GET_BUDGET_PLANNER = async (reqQuery) => {
+  try {
+    const {email} = reqQuery
+
+    const findUser = await USER.findOne({email: email})
+    
+    const userId = findUser._id;
+
+    const findBudget = await BUDGET.findOne({userId: {$in:[userId]}, budgetName:budgetName}, { '_id': false})
+
+    return findBudget;
+  } catch (error) {
+    throw error;
+  }
+}
+
 const GET_CATEGORY_PLANNER = async (reqQuery) =>{
   try {
-    const {email, type} = reqQuery
+    const {email, type, budgetName} = reqQuery
 
     const findUser = await USER.findOne({email: email})
 
     const userId = findUser._id
 
-    const findBudgetCategory = await BUDGET.findOne({userId: userId}).distinct(type)
+    const findBudgetCategory = await BUDGET.findOne({userId: {$in:[userId]}, budgetName:budgetName}).distinct(type)
     return findBudgetCategory
   } catch (error) {
     throw error;
@@ -156,7 +180,7 @@ const GET_CATEGORY_PLANNER = async (reqQuery) =>{
 
 const GET_TRANSACTION = async (reqQuery) =>{
   try {
-    const {email, type} = reqQuery
+    const {email, type, budgetName} = reqQuery
 
     const findUser = await USER.findOne({email: email})
 
@@ -164,7 +188,7 @@ const GET_TRANSACTION = async (reqQuery) =>{
 
       if(type === 'monthly'){
         const {month, year} = reqQuery
-        const getExpenses = await EXPENSES.find({userId:userId , $expr:{$and:[{$eq:[{"$month":"$createdAt"}, month]} ,{$eq:[{"$year":"$createdAt"}, year]}],  }}).sort({createdAt: -1})
+        const getExpenses = await EXPENSES.find({userId:{$in:[userId]}, budgetName:budgetName , $expr:{$and:[{$eq:[{"$month":"$createdAt"}, month]} ,{$eq:[{"$year":"$createdAt"}, year]}],  }}).sort({createdAt: -1})
 
         let sum = 0
 
@@ -179,7 +203,7 @@ const GET_TRANSACTION = async (reqQuery) =>{
       
     }else if (type === 'yearly'){
         const {year} = reqQuery
-        const getExpenses = await EXPENSES.find({userId:userId , $expr:{$and:[{$eq:[{"$year":"$createdAt"}, year]}]}}).sort({createdAt: -1})
+        const getExpenses = await EXPENSES.find({userId:{$in:[userId]} ,budgetName:budgetName, $expr:{$and:[{$eq:[{"$year":"$createdAt"}, year]}]}}).sort({createdAt: -1})
 
         let sum = 0
 
@@ -194,7 +218,7 @@ const GET_TRANSACTION = async (reqQuery) =>{
     }else if (type === 'weekly'){
       const {startDate, endDate} = reqQuery
 
-      const getExpenses = await EXPENSES.find({userId:userId, createdAt:{$lte:endDate, $gte:startDate}}).sort({createdAt: -1})
+      const getExpenses = await EXPENSES.find({userId:{$in:[userId]},budgetName:budgetName, createdAt:{$lte:endDate, $gte:startDate}}).sort({createdAt: -1})
 
         let sum = 0
 
@@ -211,7 +235,7 @@ const GET_TRANSACTION = async (reqQuery) =>{
 
       const endDate = day.concat("T23:59:59.000+00:00")
       const startDate = day.concat("T00:00:00.000+00:00")
-      const getExpenses = await EXPENSES.find({userId:userId , createdAt:{$gte:startDate, $lte:endDate}})
+      const getExpenses = await EXPENSES.find({userId:{$in:[userId]} ,budgetName:budgetName, createdAt:{$gte:startDate, $lte:endDate}})
 
       let sum = 0
 
@@ -224,7 +248,7 @@ const GET_TRANSACTION = async (reqQuery) =>{
         totalSum:sum
       } 
     }else {
-      const getExpenses = await EXPENSES.find({userId:userId})
+      const getExpenses = await EXPENSES.find({userId:{$in:[userId]}})
       return getExpenses
     }
   } catch (error) {
@@ -234,7 +258,7 @@ const GET_TRANSACTION = async (reqQuery) =>{
 
 const GET_INSIGHT = async (reqQuery) =>{
   try {
-    const {email, type, year, month, startDate, endDate} = reqQuery
+    const {email, type, year, month, startDate, endDate, budgetName} = reqQuery
 
     const monthsConversion = {
       '1': "January",
@@ -255,7 +279,7 @@ const GET_INSIGHT = async (reqQuery) =>{
     const userId = findUser._id;
 
     if(type === 'monthly'){
-      const getExpenses = await EXPENSES.aggregate([{$match:{userId:userId }}, {$group:{_id:{month:{$month:"$createdAt"}},expenses_this_month:{
+      const getExpenses = await EXPENSES.aggregate([{$match:{userId:{$in:[userId]}}, budgetName:budgetName}, {$group:{_id:{month:{$month:"$createdAt"}},expenses_this_month:{
             $push: {
               category:"$category",
               name:"$name",
@@ -280,7 +304,7 @@ const GET_INSIGHT = async (reqQuery) =>{
       });
     return categories
   }else if (type === 'yearly'){
-    const getExpenses = await EXPENSES.aggregate([{$match:{userId:userId}}, {$group:{_id:{year:{$year:"$createdAt"}},expenses_this_year:{
+    const getExpenses = await EXPENSES.aggregate([{$match:{userId:{$in:[userId]}}, budgetName:budgetName}, {$group:{_id:{year:{$year:"$createdAt"}},expenses_this_year:{
           $push: {
             category:"$category",
             name:"$name",
@@ -306,7 +330,7 @@ const GET_INSIGHT = async (reqQuery) =>{
     return categories
   }else if (type === 'weekly'){
     const {startDate, endDate} = reqQuery
-    const getExpenses = await EXPENSES.aggregate([{$match:{userId:userId, createdAt:{$lte:endDate, $gte:startDate}  }}, {$group:{_id:{week:{$week:"$createdAt"}},expenses_this_week:{
+    const getExpenses = await EXPENSES.aggregate([{$match:{userId:{$in:[userId]}, createdAt:{$lte:endDate, $gte:startDate}}, budgetName:budgetName}, {$group:{_id:{week:{$week:"$createdAt"}},expenses_this_week:{
           $push: {
             category:"$category",
             name:"$name",
@@ -335,13 +359,28 @@ const GET_INSIGHT = async (reqQuery) =>{
     throw error;
   }
 }
+
+const GET_ALL_BUDGET_NAME = async (reqQuery) => {
+  try {
+    const {email} = reqQuery
+    const userId = await findUserId(email)
+
+    const findBudgetName = BUDGET.find({userId: {$in:[userId]}}, {budgetName:1, _id:0})
+
+    return findBudgetName
+  } catch (error) {
+    throw error    
+  }
+}
 module.exports = {
   BUDGET_PLANNER_ALLOCATOR, 
   EXPENSE_ALLOCATOR,
+  ADD_USER,
+  EDIT_BUDGET_PLANNER,
+  EDIT_CATEGORY_PLANNER,
   GET_BUDGET_PLANNER,
   GET_CATEGORY_PLANNER,
   GET_TRANSACTION,
-  EDIT_BUDGET_PLANNER,
-  EDIT_CATEGORY_PLANNER,
-  GET_INSIGHT
+  GET_INSIGHT,
+  GET_ALL_BUDGET_NAME
 }
