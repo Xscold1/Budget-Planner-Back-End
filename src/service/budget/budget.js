@@ -113,6 +113,8 @@ const EDIT_BUDGET_PLANNER = async (reqBody, reqQuery) =>{
     const userId = await findUserId(email)
 
     const findBudget = await BUDGET.findOne({userId: {$in:[userId]}, budgetName: budgetName})
+
+    await EXPENSES.updateMany({userId: userId, budgetName: budgetName}, {budgetName: editBudgetName})
     
     const payLoad = {
       budgetName:editBudgetName,
