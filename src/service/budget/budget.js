@@ -106,20 +106,20 @@ const ADD_USER = async (reqBody, reqQuery) =>{
 const EDIT_BUDGET_PLANNER = async (reqBody, reqQuery) =>{
   try {
 
-    const {email} = reqQuery
+    const {email, budgetName} = reqQuery
 
-    const {totalBudget, budgetName} = reqBody
+    const {totalBudget, editBudgetName} = reqBody
 
-    const userId = findUserId(email)
+    const userId = await findUserId(email)
 
-    const findBudget = await BUDGET.findOne({userId: userId, budgetName: budgetName})
-
+    const findBudget = await BUDGET.findOne({userId: {$in:[userId]}, budgetName: budgetName})
+    
     const payLoad = {
-      budgetName,
+      budgetName:editBudgetName,
       totalBudget,
       remainingBudget: totalBudget - findBudget.totalExpenses
     }
-
+    
     const updateBudget = await BUDGET.findOneAndUpdate({userId:{$in:[userId]}, budgetName:budgetName}, payLoad , {new:true})
 
     return updateBudget;
