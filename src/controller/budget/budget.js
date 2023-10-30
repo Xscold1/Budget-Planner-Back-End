@@ -117,6 +117,17 @@ const GET_ALL_BUDGET_NAME = async (req, res) =>{
   }
 }
 
+const GET_ALL_USER_INCLUDED_IN_JOINT_ACCOUNT = async (req, res) => {
+  try {
+    const response  = await budgetService.GET_ALL_USER_INCLUDED_IN_JOINT_ACCOUNT(req.query)
+
+    return res.json({...SUCCESS_MESSAGE.USER_SUCCESS_ALLOCATION, response});
+  } catch (error) {
+    console.log(error);
+    if(error.message) return res.json(error);
+  }
+}
+
 
 module.exports = {
   BUDGET_PLANNER_ALLOCATOR,
@@ -128,5 +139,6 @@ module.exports = {
   EDIT_BUDGET_PLANNER,
   EDIT_CATEGORY_PLANNER,
   GET_INSIGHT,
-  GET_ALL_BUDGET_NAME
+  GET_ALL_BUDGET_NAME,
+  GET_ALL_USER_INCLUDED_IN_JOINT_ACCOUNT
 }

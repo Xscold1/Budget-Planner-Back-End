@@ -370,6 +370,26 @@ const GET_ALL_BUDGET_NAME = async (reqQuery) => {
     throw error    
   }
 }
+
+const GET_ALL_USER_INCLUDED_IN_JOINT_ACCOUNT = async (reqQuery) => {
+  try {
+    const {email, budgetName} = reqQuery
+
+    const userId = await findUserId(email)
+
+    const findUserAlongWithBudget = await BUDGET.findOne({userId: {$in:[userId]}, budgetName:budgetName})
+
+    const userNames = []
+
+    for (let user of findUserAlongWithBudget.userId){
+      let getUserName = await USER.findOne({_id: user})
+      userNames.push(getUserName.userName)
+    }
+    return userNames
+  } catch (error) {
+    throw error
+  }
+}
 module.exports = {
   BUDGET_PLANNER_ALLOCATOR, 
   EXPENSE_ALLOCATOR,
@@ -380,5 +400,6 @@ module.exports = {
   GET_CATEGORY_PLANNER,
   GET_TRANSACTION,
   GET_INSIGHT,
-  GET_ALL_BUDGET_NAME
+  GET_ALL_BUDGET_NAME,
+  GET_ALL_USER_INCLUDED_IN_JOINT_ACCOUNT
 }
