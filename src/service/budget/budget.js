@@ -130,7 +130,7 @@ const EDIT_BUDGET_PLANNER = async (reqBody, reqQuery) =>{
 
 const EDIT_CATEGORY_PLANNER = async (reqBody, reqQuery) =>{
   try {
-    const {email} = reqQuery
+    const {email, budgetName} = reqQuery
 
     const findUser = await USER.findOne({email: email})
 
