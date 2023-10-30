@@ -185,7 +185,7 @@ const GET_TRANSACTION = async (reqQuery) =>{
 
       if(type === 'monthly'){
         const {month, year} = reqQuery
-        const getExpenses = await EXPENSES.find({userId:{$in:[userId]}, budgetName:budgetName , $expr:{$and:[{$eq:[{"$month":"$createdAt"}, month]} ,{$eq:[{"$year":"$createdAt"}, year]}],  }}).sort({createdAt: -1})
+        const getExpenses = await EXPENSES.find({userId:{$in:[userId]}, budgetName:budgetName , $expr:{$and:[{$eq:[{"$month":"$createdAt"}, month]} ,{$eq:[{"$year":"$createdAt"}, year]}]}}).sort({createdAt: -1})
 
         let sum = 0
 
@@ -232,7 +232,7 @@ const GET_TRANSACTION = async (reqQuery) =>{
 
       const endDate = day.concat("T23:59:59.000+00:00")
       const startDate = day.concat("T00:00:00.000+00:00")
-      const getExpenses = await EXPENSES.find({userId:{$in:[userId]} ,budgetName:budgetName, createdAt:{$gte:startDate, $lte:endDate}})
+      const getExpenses = await EXPENSES.find({userId:{$in:[userId]} ,budgetName:budgetName, $and:{createdAt:{$gte:startDate, $lte:endDate}}})
 
       let sum = 0
 
@@ -275,8 +275,9 @@ const GET_INSIGHT = async (reqQuery) =>{
     const findUser = await USER.findOne({email: email})
     const userId = findUser._id;
 
+
     if(type === 'monthly'){
-      const getExpenses = await EXPENSES.aggregate([{$match:{userId:{$in:[userId]}, budgetName:budgetName}}, {$group:{_id:{month:{$month:"$createdAt"}},expenses_this_month:{
+      const getExpenses = await EXPENSES.aggregate([{$match:{userId:{$in:[userId]}, budgetName:budgetName, $expr:{$eq:[{"$month":"$createdAt"}, Number(month)], $eq:[{"$year":"$createdAt"}, Number(year)]}}}, {$group:{_id:{month:{$month:"$createdAt"}},expenses_this_month:{
             $push: {
               category:"$category",
               name:"$name",
@@ -301,7 +302,7 @@ const GET_INSIGHT = async (reqQuery) =>{
       });
     return categories
   }else if (type === 'yearly'){
-    const getExpenses = await EXPENSES.aggregate([{$match:{userId:{$in:[userId]}, budgetName:budgetName}}, {$group:{_id:{year:{$year:"$createdAt"}},expenses_this_year:{
+    const getExpenses = await EXPENSES.aggregate([{$match:{userId:{$in:[userId]}, budgetName:budgetName, $expr:{$eq:[{"$year":"$createdAt"}, Number(year)]}}}, {$group:{_id:{year:{$year:"$createdAt"}},expenses_this_year:{
           $push: {
             category:"$category",
             name:"$name",
@@ -326,8 +327,8 @@ const GET_INSIGHT = async (reqQuery) =>{
   });
     return categories
   }else if (type === 'weekly'){
-    const {startDate, endDate} = reqQuery
-    const getExpenses = await EXPENSES.aggregate([{$match:{userId:{$in:[userId]}, createdAt:{$lte:endDate, $gte:startDate},  budgetName:budgetName}}, {$group:{_id:{week:{$week:"$createdAt"}},expenses_this_week:{
+
+    const getExpenses = await EXPENSES.aggregate([{$match:{userId:{$in:[userId]},budgetName:budgetName, $expr:{createdAt:{$gte:["$createdAt", startDate]}},  $expr:{createdAt:{$lte:["$createdAt", endDate]}}}}, {$group:{_id:{week:{$week:"$createdAt"}},expenses_this_week:{
           $push: {
             category:"$category",
             name:"$name",
