@@ -52,8 +52,10 @@ const LOGIN = async (reqBody) => {
     if (!comparePassword) throw(ERROR_MESSAGE.USER_ERROR_INVALID_PASSWORD)
 
     const payload ={
-      budgetName:getDefaultBudget.budgetName,
-      token:findUser,
+      token:{
+        defaultBudget:getDefaultBudget.budgetName,
+        userDetails:findUser
+      },
     }
 
     return payload;
