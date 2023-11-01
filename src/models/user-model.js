@@ -15,9 +15,9 @@ const user = new Schema({
       type: 'String',
       required: true
     },
-    ifBudgetAllocationExists:{
+    ifNewUser:{
       type: 'Boolean',
-      default: false
+      default: true
     }
 })
 
