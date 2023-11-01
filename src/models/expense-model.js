@@ -19,6 +19,7 @@ const expenses = new Schema({
     type: "String",
     enums:["needs", "wants", "savings"]
   },
+  budgetName:String,
   userId:{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'user'

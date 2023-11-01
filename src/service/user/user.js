@@ -43,13 +43,22 @@ const LOGIN = async (reqBody) => {
 
     const findUser = await USER.findOne({email:userEmail})
 
+    const getDefaultBudget = await BUDGET.findOne({userId:{$in:findUser._id}}, {budgetName:1})
+
     if(!findUser || findUser === null) throw (ERROR_MESSAGE.USER_ERROR_DO_NOT_EXIST)
 
     const comparePassword = await bcrypt.compare(password, findUser.password)
 
     if (!comparePassword) throw(ERROR_MESSAGE.USER_ERROR_INVALID_PASSWORD)
 
-    return findUser;
+    const payload ={
+      token:{
+        defaultBudget:getDefaultBudget.budgetName,
+        userDetails:findUser
+      },
+    }
+
+    return payload;
   }catch (error) {
     throw error;
   }
