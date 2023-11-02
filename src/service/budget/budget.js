@@ -53,7 +53,6 @@ const EXPENSE_ALLOCATOR = async (reqBody, reqQuery) => {
 
     const userId = await findUserId(email)
 
-
     const expensePayload = {
       amount,
       name,
@@ -72,7 +71,7 @@ const EXPENSE_ALLOCATOR = async (reqBody, reqQuery) => {
 
     const expense = Number(curBudget.totalExpenses) + Number(amount);
     
-    await BUDGET.findOneAndUpdate({userId: {$in:[userId]}}, {
+    await BUDGET.findOneAndUpdate({userId: {$in:[userId]}, budgetName:budgetName}, {
       totalExpenses: expense,
       remainingBudget: Number(curBudget.totalBudget) - Number(expense),
     })
