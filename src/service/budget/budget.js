@@ -53,7 +53,6 @@ const EXPENSE_ALLOCATOR = async (reqBody, reqQuery) => {
 
     const userId = await findUserId(email)
 
-
     const expensePayload = {
       amount,
       name,
