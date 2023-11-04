@@ -58,7 +58,7 @@ const EDIT_PROFILE = async (req , res ) => {
 const GET_USER = async (req , res ) => {
   try {
 
-    const response = await userService.GET_USER(req.body); 
+    const response = await userService.GET_USER(req.query); 
 
     return res.json({...SUCCESS_MESSAGE.USER_LOGIN_SUCCESS, response});
 
