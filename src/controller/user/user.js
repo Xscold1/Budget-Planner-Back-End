@@ -44,13 +44,13 @@ const LOGIN = async (req , res ) => {
 const EDIT_PROFILE = async (req , res ) => {
   try {
 
-    const response = await userService.EDIT_PROFILE(req.body, req.query); 
+    const response = await userService.EDIT_PROFILE(req.body, req.query, req.file.path); 
 
     return res.json({...SUCCESS_MESSAGE.USER_LOGIN_SUCCESS, response});
 
   } catch (error) {
     if(error.message) return res.json(error);
-
+    console.log(error);
     return res.json(ERROR_MESSAGE.GENERAL_ERROR_REQUEST);
   }
 }

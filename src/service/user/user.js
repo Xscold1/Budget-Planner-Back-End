@@ -15,6 +15,7 @@ const saltRounds = 10
 const checkEmail = require('../../utils/checkEmailIfExist')
 const findUserId = require('../../utils/findUserId');
 const generateToken = require('../../utils/generateToken');
+const cloudinary = require('../../utils/cloudinary')
 
 //library
 const nodemailer = require("nodemailer");
@@ -82,19 +83,26 @@ const LOGIN = async (reqBody) => {
   }
 }
 
-const EDIT_PROFILE = async (reqBody, reqQuery) => {
+const EDIT_PROFILE = async (reqBody, reqQuery, reqPath) => {
   try {
-    const {email,} = reqQuery
+    const {email} = reqQuery
     
     const { password, newPassword, userName} = reqBody
+
+    const uploadImage = await cloudinary.uploader.upload(reqPath)
 
     const userId = await findUserId(email)
 
     const findUser = await USER.findOne({email:email})
 
     if(!password) {
+
+      const createUserPayload = {
+        userName,
+        imageUrl: uploadImage.url
+      }
       
-      const updateUser = await USER.findOneAndUpdate({userId:userId}, reqBody, {new:true})
+      const updateUser = await USER.findOneAndUpdate({userId:userId}, createUserPayload, {new:true})
 
       return updateUser
 
@@ -107,7 +115,8 @@ const EDIT_PROFILE = async (reqBody, reqQuery) => {
 
       const createUserPayload = {
         userName,
-        password: hashPassword
+        password: hashPassword,
+        imageUrl: uploadImage.url
       }
 
       const updateUser = await USER.findOneAndUpdate({userId:userId}, createUserPayload, {new:true})
@@ -158,8 +167,21 @@ const FORGOT_PASSWORD = async (reqBody) => {
     const mailOptions = {
       from: "budgetplanner321@gmail.com",
       to: email,
-      subject: "New Password Request",
-      text: `Your new password is: ${newPassword}`,
+      subject: "Your Password Reset Request",
+      text: `
+      Dear ${user.userName}
+
+      We have received your request to reset your password for your account. For your security, we're sending you the requested password information.
+
+      Your new password is: ${newPassword}
+      
+      Please make sure to update your password as soon as you log in to your account.
+      
+      Sincerely,
+      ${user.userName}      
+      `,
+
+      
     };
 
     transporter.sendMail(mailOptions, (error, info) => {
@@ -175,8 +197,6 @@ const FORGOT_PASSWORD = async (reqBody) => {
       throw error
   }
 };
-
-
 
 module.exports = {
   REGISTER,

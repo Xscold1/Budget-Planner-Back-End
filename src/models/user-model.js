@@ -18,6 +18,9 @@ const user = new Schema({
     ifNewUser:{
       type: 'Boolean',
       default: true
+    },
+    imageUrl:{
+      type: 'String',
     }
 })
 
