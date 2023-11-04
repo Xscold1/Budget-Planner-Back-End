@@ -58,13 +58,14 @@ const EDIT_PROFILE = async (req , res ) => {
 const GET_USER = async (req , res ) => {
   try {
 
-    const response = await userService.GET_USER(req.body); 
+    const response = await userService.GET_USER(req.query); 
+    
 
     return res.json({...SUCCESS_MESSAGE.USER_LOGIN_SUCCESS, response});
 
   } catch (error) {
     if(error.message) return res.json(error);
-
+    console.log(error);
     return res.json(ERROR_MESSAGE.GENERAL_ERROR_REQUEST);
   }
 }
@@ -74,11 +75,11 @@ const FORGOT_PASSWORD = async (req , res ) => {
 
     const response = await userService.FORGOT_PASSWORD(req.body); 
 
-    return res.json({...SUCCESS_MESSAGE.USER_LOGIN_SUCCESS, response});
+    return res.json({...SUCCESS_MESSAGE.SENT_NEW_PASSWORD_TO_EMAIL, response});
 
   } catch (error) {
     if(error.message) return res.json(error);
-
+    console.log(error);
     return res.json(ERROR_MESSAGE.GENERAL_ERROR_REQUEST);
   }
 }

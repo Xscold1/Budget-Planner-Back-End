@@ -14,6 +14,7 @@ const saltRounds = 10
 //utils
 const checkEmail = require('../../utils/checkEmailIfExist')
 const findUserId = require('../../utils/findUserId');
+const generateToken = require('../../utils/generateToken');
 
 //library
 const nodemailer = require("nodemailer");
@@ -47,18 +48,31 @@ const LOGIN = async (reqBody) => {
 
     const findUser = await USER.findOne({email:userEmail})
 
-    const getDefaultBudget = await BUDGET.findOne({userId:{$in:findUser._id}}, {budgetName:1})
-
     if(!findUser || findUser === null) throw (ERROR_MESSAGE.USER_ERROR_DO_NOT_EXIST)
+
+    const getDefaultBudget = await BUDGET.findOne({userId:{$in:[findUser._id]}}, {budgetName:1, limit:1})
+
+    const token = generateToken({email:findUser.email, userName:findUser.userName})
+
+    if(!getDefaultBudget) {
+      const payload ={
+        data:{
+          defaultBudget:null,
+          token:token
+        },
+      }
+  
+      return payload;
+    }
 
     const comparePassword = await bcrypt.compare(password, findUser.password)
 
     if (!comparePassword) throw(ERROR_MESSAGE.USER_ERROR_INVALID_PASSWORD)
 
     const payload ={
-      token:{
+      data:{
         defaultBudget:getDefaultBudget.budgetName,
-        userDetails:findUser
+        token:token
       },
     }
 
@@ -123,32 +137,37 @@ const FORGOT_PASSWORD = async (reqBody) => {
 
     // Check if the email exists in the database
     const user = await USER.findOne({ email });
+
     if (!user)throw (ERROR_MESSAGE.USER_ERROR_DO_NOT_EXIST)
 
     // Generate a new password and save it to the database
-    const newPassword = generateNewPassword();
+    const newPassword = Math.random().toString(36).slice(-8);
     const hashPassword = bcrypt.hashSync(newPassword, 10)
     user.password = hashPassword;
-    await user.save();
+    const changePassword = await user.save();
 
     // Send an email to the user with the new password
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
-        user: "budgetplanner@gmail.com",
-        pass: "kbqvhygysktlqrgq",
+        user: "budgetplanner321@gmail.com",
+        pass: "qxifpotuuopnkylh",
       },
     });
 
     const mailOptions = {
-      from: "ConCheck@gmail.com",
+      from: "budgetplanner321@gmail.com",
       to: email,
       subject: "New Password Request",
       text: `Your new password is: ${newPassword}`,
     };
 
     transporter.sendMail(mailOptions, (error, info) => {
-     console.log("success")
+      if(error) {
+        throw error
+      }else {
+        console.log(info)
+      }
     });
 
     return true

@@ -1,11 +1,12 @@
 const jwt = require("jsonwebtoken");
 
-const jwtSecret = "SECRET";
+const jwtSecret = process.env.SECRET;
 
 module.exports = function (req, res, next) {
 
   try {
     const bearerToken = req.headers.authorization;
+
     if(!bearerToken){
       throw { statusCode: 500, message: "No token, authorization denied" };
     }

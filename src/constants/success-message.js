@@ -66,7 +66,7 @@ const successMessage = {
   SENT_NEW_PASSWORD_TO_EMAIL:{
     status: STATUS.OK,
     statusCode: STATUS_CODE.SUCCESS,
-    message: 'New password is sent to the email address',
+    message: 'New password is sent to your email address',
   },
   
 }
