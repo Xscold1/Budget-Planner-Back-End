@@ -5,6 +5,7 @@ const BUDGET = require('../../models/budget-model');
 
 //constants
 const ERROR_MESSAGE  = require('../../constants/error-message');
+const SUCCESS_MESSAGE  = require('../../constants/success-message');
 
 //modules
 const bcrypt = require('bcrypt');
@@ -13,6 +14,9 @@ const saltRounds = 10
 //utils
 const checkEmail = require('../../utils/checkEmailIfExist')
 const findUserId = require('../../utils/findUserId');
+
+//library
+const nodemailer = require("nodemailer");
 
 const REGISTER = async (reqBody) => {
   try {
@@ -115,11 +119,44 @@ const GET_USER = async (reqQuery) => {
 
 const FORGOT_PASSWORD = async (reqBody) => {
   try {
-    
+    const {email} = reqBody;
+
+    // Check if the email exists in the database
+    const user = await USER.findOne({ email });
+    if (!user)throw (ERROR_MESSAGE.USER_ERROR_DO_NOT_EXIST)
+
+    // Generate a new password and save it to the database
+    const newPassword = generateNewPassword();
+    const hashPassword = bcrypt.hashSync(newPassword, 10)
+    user.password = hashPassword;
+    await user.save();
+
+    // Send an email to the user with the new password
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: "budgetplanner@gmail.com",
+        pass: "kbqvhygysktlqrgq",
+      },
+    });
+
+    const mailOptions = {
+      from: "ConCheck@gmail.com",
+      to: email,
+      subject: "New Password Request",
+      text: `Your new password is: ${newPassword}`,
+    };
+
+    transporter.sendMail(mailOptions, (error, info) => {
+     console.log("success")
+    });
+
+    return true
   } catch (error) {
-    
+      throw error
   }
-}
+};
+
 
 
 module.exports = {

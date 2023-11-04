@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const budgetController = require('../controller/budget/budget');
+const auth = require('../middleware/auth');
 
 router.post('/budget/allocation',budgetController.BUDGET_PLANNER_ALLOCATOR);
 router.post('/budget/expense',budgetController.EXPENSE_ALLOCATOR);
