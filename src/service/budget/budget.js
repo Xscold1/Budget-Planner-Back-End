@@ -378,6 +378,8 @@ const GET_ALL_USER_INCLUDED_IN_JOINT_ACCOUNT = async (reqQuery) => {
 
     const findUserAlongWithBudget = await BUDGET.findOne({userId: {$in:[userId]}, budgetName:budgetName})
 
+    if (!findUserAlongWithBudget) return null
+    
     const userNames = []
 
     for (let user of findUserAlongWithBudget.userId){
