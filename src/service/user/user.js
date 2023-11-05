@@ -53,7 +53,7 @@ const LOGIN = async (reqBody) => {
 
     const getDefaultBudget = await BUDGET.findOne({userId:{$in:[findUser._id]}}, {budgetName:1, limit:1})
 
-    const token = generateToken({email:findUser.email, userName:findUser.userName})
+    const token = generateToken({email:findUser.email, userName:findUser.userName, ifNewUser:findUser.ifNewUser, imageUrl:findUser.imageUrl})
 
     if(!getDefaultBudget) {
       const payload ={
