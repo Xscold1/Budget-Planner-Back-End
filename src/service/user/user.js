@@ -43,6 +43,8 @@ const LOGIN = async (reqBody) => {
 
     const findUser = await USER.findOne({email:userEmail})
 
+    if(!findUser || findUser === null) throw (ERROR_MESSAGE.USER_ERROR_DO_NOT_EXIST)
+
     const getDefaultBudget = await BUDGET.findOne({userId:{$in:findUser._id}}, {budgetName:1})
 
     if(!getDefaultBudget) {
@@ -54,8 +56,6 @@ const LOGIN = async (reqBody) => {
       }
       return payload;
     }
-
-    if(!findUser || findUser === null) throw (ERROR_MESSAGE.USER_ERROR_DO_NOT_EXIST)
 
     const comparePassword = await bcrypt.compare(password, findUser.password)
 
