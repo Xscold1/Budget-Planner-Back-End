@@ -307,8 +307,6 @@ const LOGOUT = async (reqQuery) =>{
   try {
     const {email} = reqQuery
 
-    console.log(email)
-
     const findTwoAuth = await TWOAUTH.findOneAndDelete({email:email})
 
     if(!findTwoAuth) throw (ERROR_MESSAGE.USER_ERROR_DO_NOT_EXIST)
