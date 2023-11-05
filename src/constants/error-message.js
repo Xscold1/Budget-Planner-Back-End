@@ -55,6 +55,12 @@ const errorMessage = {
     statusCode: STATUS_CODE.FAILED,
     message: 'User already allocated budget.',
   },
+
+  USER_ALREADY_EXIST_IN_THE_BUDGET:{
+    status: STATUS.FAILED,
+    statusCode: STATUS_CODE.FAILED,
+    message: 'User already exists in the budget.',
+  },
   
 
   //debt error

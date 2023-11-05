@@ -86,6 +86,8 @@ const ADD_USER = async (reqBody, reqQuery) =>{
   try {
     const {userEmail} = reqBody
 
+    const findUserEmail = await USER.findOne({email:userEmail})
+
     const {email, budgetName} = reqQuery
 
     const userId = await findUserId(email)
@@ -93,6 +95,10 @@ const ADD_USER = async (reqBody, reqQuery) =>{
     const findUser = await USER.findOne({email: userEmail})
 
     if(!findUser) throw (ERROR_MESSAGE.USER_ERROR_DO_NOT_EXIST)
+
+    const checkIfUserAlreadyExistInBudget = await BUDGET.findOne({email:findUserEmail})
+
+    if(checkIfUserAlreadyExistInBudget) throw (ERROR_MESSAGE.USER_ALREADY_EXIST_IN_THE_BUDGET)
 
     const addUserToBudget = await BUDGET.findOneAndUpdate({budgetName:budgetName, userId: {$in:[userId]}}, {$push: {userId: findUser._id}}, {new: true})
 
