@@ -62,6 +62,12 @@ const errorMessage = {
     status: STATUS.FAILED,
     statusCode: STATUS_CODE.FAILED,
     message: 'You still have an outstanding balance to this person',
+  },
+
+  ERROR_INVALID_TWO_AUTH:{
+    status: STATUS.FAILED,
+    statusCode: STATUS_CODE.FAILED,
+    message: 'Invalid 2fa code please try again',
   }
 }
 

@@ -2,6 +2,7 @@
 //models
 const USER = require('../../models/user-model');
 const BUDGET = require('../../models/budget-model');
+const TWOAUTH = require('../../models/two-factor-auth')
 
 //constants
 const ERROR_MESSAGE  = require('../../constants/error-message');
@@ -43,45 +44,81 @@ const REGISTER = async (reqBody) => {
 
 const LOGIN = async (reqBody) => {
   try {
-    const {email, password} = reqBody
+    const { email, password } = reqBody;
+    const userEmail = email.toLowerCase();
+    const findUser = await USER.findOne({ email: userEmail });
 
-    const userEmail = email.toLowerCase()
+    if (!findUser || findUser === null) throw ERROR_MESSAGE.USER_ERROR_DO_NOT_EXIST;
 
-    const findUser = await USER.findOne({email:userEmail})
+    const getDefaultBudget = await BUDGET.findOne({ userId: { $in: [findUser._id] } }, { budgetName: 1, limit: 1 });
 
-    if(!findUser || findUser === null) throw (ERROR_MESSAGE.USER_ERROR_DO_NOT_EXIST)
+    const comparePassword = await bcrypt.compare(password, findUser.password);
 
-    const getDefaultBudget = await BUDGET.findOne({userId:{$in:[findUser._id]}}, {budgetName:1, limit:1})
+    if (!comparePassword) throw ERROR_MESSAGE.USER_ERROR_INVALID_PASSWORD;
 
-    const token = generateToken({email:findUser.email, userName:findUser.userName, ifNewUser:findUser.ifNewUser, imageUrl:findUser.imageUrl})
+    const token = generateToken({
+      email: findUser.email,
+      userName: findUser.userName,
+      ifNewUser: findUser.ifNewUser,
+      imageUrl: findUser.imageUrl,
+    });
 
-    if(!getDefaultBudget) {
-      const payload ={
-        data:{
-          defaultBudget:null,
-          token:token
-        },
+    if(findUser.twoAuthRequired === false){
+      if (!getDefaultBudget) {
+        const payload = {
+          data: {
+            defaultBudget: null,
+            token:token
+          },
+        };
+
+        return payload;
       }
-  
+      const payload = {
+        data: {
+          defaultBudget: getDefaultBudget.budgetName,
+          token: token,
+        },
+      };
+
       return payload;
     }
 
-    const comparePassword = await bcrypt.compare(password, findUser.password)
+    // Generate a 6-digit random 2FA code
+    const twoFactorCode = Math.floor(100000 + Math.random() * 900000); // Generates a random code between 100000 and 999999
 
-    if (!comparePassword) throw(ERROR_MESSAGE.USER_ERROR_INVALID_PASSWORD)
-
-    const payload ={
-      data:{
-        defaultBudget:getDefaultBudget.budgetName,
-        token:token
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: "budgetplanner321@gmail.com",
+        pass: "qxifpotuuopnkylh",
       },
-    }
+    });
 
-    return payload;
-  }catch (error) {
+    const mailOptions = {
+      from: 'YOUR_EMAIL',
+      to: userEmail,
+      subject: '2FA Code',
+      text: `Your 2FA code is: ${twoFactorCode}`,
+    };
+
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        throw ERROR_MESSAGE.EMAIL_SENDING_ERROR;
+      } else {
+        console.log('Code Sent');
+      }
+    });
+
+    await TWOAUTH.create({email: userEmail, code: twoFactorCode})
+
+    return true
+
+  } catch (error) {
     throw error;
   }
-}
+};
+
 
 const EDIT_PROFILE = async (reqBody, reqQuery, reqPath) => {
   try {
@@ -198,11 +235,98 @@ const FORGOT_PASSWORD = async (reqBody) => {
   }
 };
 
+const VERIFY_2FA = async(reqBody,reqQuery) => {
+  try {
+    const {email} = reqQuery
+
+    const {code} = reqBody
+
+    const checkCode = await TWOAUTH.findOne({email: email})
+
+    if(!checkCode) throw (ERROR_MESSAGE.USER_ERROR_DO_NOT_EXIST)
+
+    if(checkCode.code !== code) throw (ERROR_MESSAGE.ERROR_INVALID_TWO_AUTH)
+
+    const findUser = await USER.findOne({ email: email });
+
+    const token = generateToken({
+      email: findUser.email,
+      userName: findUser.userName,
+      ifNewUser: findUser.ifNewUser,
+      imageUrl: findUser.imageUrl,
+    });
+
+    const getDefaultBudget = await BUDGET.findOne({ userId: { $in: [findUser._id] } }, { budgetName: 1, limit: 1 });
+
+    if (!getDefaultBudget) {
+      const payload = {
+        data: {
+          defaultBudget: null,
+          token:token
+        },
+      };
+
+      return payload;
+    }
+    const payload = {
+      data: {
+        defaultBudget: getDefaultBudget.budgetName,
+        token: token,
+      },
+    };
+    return payload;
+  } catch (error) {
+    throw error
+  }
+}
+
+const TOGGLE_2FA = async (reqQuery) =>{
+  try {
+
+    const {email} = reqQuery
+    const checkIf2fAIsEnabled = await USER.findOne({email:email})
+
+    if(!checkIf2fAIsEnabled) throw (ERROR_MESSAGE.USER_ERROR_DO_NOT_EXIST)
+
+    if(checkIf2fAIsEnabled.twoAuthRequired === false) {
+      await USER.updateOne({email:email}, {$set:{twoAuthRequired:true}})
+      return true
+    }
+
+    await USER.updateOne({email:email}, {$set:{twoAuthRequired:false}})
+
+    return false
+
+
+  } catch (error) {
+    throw error
+  }
+}
+
+const LOGOUT = async (reqQuery) =>{
+  try {
+    const {email} = reqQuery
+
+    console.log(email)
+
+    const findTwoAuth = await TWOAUTH.findOneAndDelete({email:email})
+
+    if(!findTwoAuth) throw (ERROR_MESSAGE.USER_ERROR_DO_NOT_EXIST)
+
+    return true
+  } catch (error) {
+    throw error
+  }
+}
+
 module.exports = {
   REGISTER,
   LOGIN,
   EDIT_PROFILE,
   GET_USER,
-  FORGOT_PASSWORD
+  FORGOT_PASSWORD,
+  VERIFY_2FA,
+  TOGGLE_2FA,
+  LOGOUT
  
 }

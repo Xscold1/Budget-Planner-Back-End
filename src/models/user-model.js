@@ -21,6 +21,10 @@ const user = new Schema({
     },
     imageUrl:{
       type: 'String',
+    },
+    twoAuthRequired:{
+      type: 'Boolean',
+      default: false
     }
 })
 

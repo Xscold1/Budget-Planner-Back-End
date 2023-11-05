@@ -68,6 +68,22 @@ const successMessage = {
     statusCode: STATUS_CODE.SUCCESS,
     message: 'New password is sent to your email address',
   },
+  SENT_2FA_CODE_TO_EMAIL:{
+    status: STATUS.OK,
+    statusCode: STATUS_CODE.SUCCESS,
+    message: 'Your 2fa code was sent to your email address',
+  },
+
+  SUCCESS_2FA_ENABLED:{
+    status: STATUS.OK,
+    statusCode: STATUS_CODE.SUCCESS,
+    message: 'Enable 2FA ',
+  },
+  SUCCESS_2FA_DISABLED:{
+    status: STATUS.OK,
+    statusCode: STATUS_CODE.SUCCESS,
+    message: 'DISABLED 2FA',
+  },
   
 }
 
