@@ -133,9 +133,7 @@ const EDIT_CATEGORY_PLANNER = async (reqBody, reqQuery) =>{
   try {
     const {email, budgetName} = reqQuery
 
-    const findUser = await USER.findOne({email: email})
-
-    const userId = findUser._id
+    const userId = await findUserId(email)
 
     const updateBudgetCategory = await BUDGET.updateOne({userId:{$in:[userId]}, budgetName:budgetName}, reqBody ,{new:true})
 
@@ -151,9 +149,7 @@ const GET_BUDGET_PLANNER = async (reqQuery) => {
   try {
     const {email, budgetName} = reqQuery
 
-    const findUser = await USER.findOne({email: email})
-    
-    const userId = findUser._id;
+    const userId = await findUserId(email)
 
     const findBudget = await BUDGET.findOne({userId: {$in:[userId]}, budgetName:budgetName}, { '_id': false})
 
@@ -378,6 +374,8 @@ const GET_ALL_USER_INCLUDED_IN_JOINT_ACCOUNT = async (reqQuery) => {
 
     const findUserAlongWithBudget = await BUDGET.findOne({userId: {$in:[userId]}, budgetName:budgetName})
 
+    if (!findUserAlongWithBudget) return null
+    
     const userNames = []
 
     for (let user of findUserAlongWithBudget.userId){
