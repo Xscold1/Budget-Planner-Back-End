@@ -49,26 +49,27 @@ const EXPENSE_ALLOCATOR = async (reqBody, reqQuery) => {
   try {
 
     const {budgetName, email} = reqQuery
-    const {amount, name, note, type, category} = reqBody;
+    const {amount, note, expenseType, category} = reqBody;
 
     const userId = await findUserId(email)
 
     const expensePayload = {
       amount,
-      name,
       category,
       note,
       budgetName,
-      expenseType:type,
+      expenseType,
       userId,
       createdAt: getDateToday()
     }
-
-    const newExpense = await EXPENSES.create(expensePayload)
     
-    // Update Budget if new expense was added
+    const newExpense = await EXPENSES.create(expensePayload)
+
     const curBudget = await BUDGET.findOne({userId: {$in:[userId]}, budgetName:budgetName})
 
+    await BUDGET.findOneAndUpdate({ userId: { $in: [userId] }, budgetName: budgetName, [`${expenseType}.name`]: category },{ $push: { [`${expenseType}.$[element].expenses`]: newExpense._id } },{ arrayFilters: [{ 'element.name': category } ]});
+    
+    
     const expense = Number(curBudget.totalExpenses) + Number(amount);
     
     await BUDGET.findOneAndUpdate({userId: {$in:[userId]}, budgetName:budgetName}, {
@@ -76,6 +77,40 @@ const EXPENSE_ALLOCATOR = async (reqBody, reqQuery) => {
       remainingBudget: Number(curBudget.totalBudget) - Number(expense),
     })
     
+    // // Check if it's time to reset the expenses
+    // if (curBudget.budgetType === 'monthly') {
+    //   // Check if it's a new month
+    //   const today = new Date();
+    //   const lastResetDate = new Date(curBudget.lastResetDate);
+    //   console.log(today.getMonth())
+    //   console.log(lastResetDate.getMonth())
+    //   if (11 !== lastResetDate.getMonth() || today.getFullYear() !== lastResetDate.getFullYear()){
+    //     // Reset expenses for the new month
+    //     await BUDGET.findOneAndUpdate({ userId, budgetName},{
+    //         totalExpenses: 0,
+    //         remainingBudget: Number(curBudget.totalBudget),
+    //         lastResetDate: today,
+    //         expenses: [],
+    //       }
+    //     );
+    //   }
+    // } else if (curBudget.budgetType === 'weekly') {
+    //   // Check if it's a new week (assuming each week starts on Sunday)
+    //   const today = new Date();
+    //   const lastResetDate = new Date(curBudget.lastResetDate);
+
+    //   if(today.getDay() === 0 &&today - lastResetDate >= 7 * 24 * 60 * 60 * 1000) {
+    //     // Reset expenses for the new week
+    //     await BUDGET.findOneAndUpdate({ userId, budgetName },{
+    //         totalExpenses: 0,
+    //         remainingBudget: Number(curBudget.totalBudget),
+    //         lastResetDate: today,
+    //         expenses: [],
+    //       }
+    //     );
+    //   }
+    // }
+
     return newExpense;
   } catch (error) {
     throw error;

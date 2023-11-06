@@ -28,6 +28,11 @@ const budget = new Schema({
     type: 'String',
     enums:['weekly', 'monthly'],
   },
+  lastResetDate: {
+    type: Date,
+    required: true,
+    default: Date.now()
+  },
   needs:[{
       name: {
         type: 'String'
