@@ -97,7 +97,7 @@ const GET_BUDGET_PLANNER = async (req, res) =>{
   try {
     const response  = await budgetService.GET_BUDGET_PLANNER(req.query)
 
-    return res.json({...SUCCESS_MESSAGE.USER_SUCCESS_ALLOCATION, response});
+    return res.json({...SUCCESS_MESSAGE.FETCH_SUCCESS, response});
 
   } catch (error) {
     console.log(error);
@@ -109,7 +109,7 @@ const GET_ALL_BUDGET_NAME = async (req, res) =>{
   try {
     const response  = await budgetService.GET_ALL_BUDGET_NAME(req.query)
 
-    return res.json({...SUCCESS_MESSAGE.USER_SUCCESS_ALLOCATION, response});
+    return res.json({...SUCCESS_MESSAGE.FETCH_SUCCESS, response});
 
   } catch (error) {
     console.log(error);
@@ -121,7 +121,7 @@ const GET_ALL_USER_INCLUDED_IN_JOINT_ACCOUNT = async (req, res) => {
   try {
     const response  = await budgetService.GET_ALL_USER_INCLUDED_IN_JOINT_ACCOUNT(req.query)
 
-    return res.json({...SUCCESS_MESSAGE.USER_SUCCESS_ALLOCATION, response});
+    return res.json({...SUCCESS_MESSAGE.FETCH_SUCCESS, response});
   } catch (error) {
     console.log(error);
     if(error.message) return res.json(error);

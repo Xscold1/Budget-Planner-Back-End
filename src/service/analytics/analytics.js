@@ -4,7 +4,6 @@ const ERROR_MESSAGE = require('../../constants/error-message')
 //utils
 const findUserId = require('../../utils/findUserId')
 
-
 //model
 const BUDGET = require('../../models/budget-model')
 const EXPENSES = require('../../models/expense-model')

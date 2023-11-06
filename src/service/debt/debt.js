@@ -24,7 +24,7 @@ const BORROW_AND_LEND = async(reqBody , reqQuery) =>{
     
     const createPayload = {
       dueDate,
-      totalDebt,
+      totalDebt: totalDebt + ((interest / 100) * totalDebt),
       balance : totalDebt,
       name,
       interest,

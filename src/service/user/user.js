@@ -6,7 +6,6 @@ const TWOAUTH = require('../../models/two-factor-auth')
 
 //constants
 const ERROR_MESSAGE  = require('../../constants/error-message');
-const SUCCESS_MESSAGE  = require('../../constants/success-message');
 
 //modules
 const bcrypt = require('bcrypt');
@@ -119,7 +118,6 @@ const LOGIN = async (reqBody) => {
   }
 };
 
-
 const EDIT_PROFILE = async (reqBody, reqQuery, reqPath) => {
   try {
     const {email} = reqQuery
@@ -190,7 +188,7 @@ const FORGOT_PASSWORD = async (reqBody) => {
     const newPassword = Math.random().toString(36).slice(-8);
     const hashPassword = bcrypt.hashSync(newPassword, 10)
     user.password = hashPassword;
-    const changePassword = await user.save();
+    await user.save();
 
     // Send an email to the user with the new password
     const transporter = nodemailer.createTransport({

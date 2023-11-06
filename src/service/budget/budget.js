@@ -144,7 +144,6 @@ const EDIT_CATEGORY_PLANNER = async (reqBody, reqQuery) =>{
   }
 }
 
-
 const GET_BUDGET_PLANNER = async (reqQuery) => {
   try {
     const {email, budgetName} = reqQuery
