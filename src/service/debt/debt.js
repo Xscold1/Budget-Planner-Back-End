@@ -93,6 +93,7 @@ const GET_LEND_LISTS = async (reqQuery) =>{
     throw error
   }
 }
+
 module.exports = {
   BORROW_AND_LEND,
   RECEIVE_AND_PAY,

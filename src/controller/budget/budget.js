@@ -41,6 +41,7 @@ const ADD_USER = async (req, res) => {
     if(error.message) return res.json(error);
   }
 }
+
 const EDIT_BUDGET_PLANNER = async (req, res) =>{
   try {
     const response = await budgetService.EDIT_BUDGET_PLANNER(req.body, req.query)
@@ -127,7 +128,6 @@ const GET_ALL_USER_INCLUDED_IN_JOINT_ACCOUNT = async (req, res) => {
     if(error.message) return res.json(error);
   }
 }
-
 
 module.exports = {
   BUDGET_PLANNER_ALLOCATOR,
