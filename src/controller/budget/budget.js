@@ -47,11 +47,21 @@ const DELETE_USER_FROM_BUDGET = async(req, res) => {
     
     return res.json({...SUCCESS_MESSAGE.DELETED_SUCCESSFULLY});
   } catch (error) {
-    onsole.log(error);
+    console.log(error);
     if(error.message) return res.json(error);
   }
 }
 
+const DELETE_CATEGORY = async (req, res) => {
+  try {
+    await budgetService.DELETE_USER_FROM_BUDGET(req.body, req.query)
+    
+    return res.json({...SUCCESS_MESSAGE.DELETED_SUCCESSFULLY});
+  } catch (error) {
+    onsole.log(error);
+    if(error.message) return res.json(error);
+  }
+}
 const EDIT_BUDGET_PLANNER = async (req, res) =>{
   try {
     const response = await budgetService.EDIT_BUDGET_PLANNER(req.body, req.query)
@@ -144,6 +154,7 @@ module.exports = {
   EXPENSE_ALLOCATOR,
   ADD_USER,
   DELETE_USER_FROM_BUDGET,
+  DELETE_CATEGORY,
   GET_BUDGET_PLANNER,
   GET_CATEGORY_PLANNER,
   GET_TRANSACTION,

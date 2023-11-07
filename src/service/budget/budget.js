@@ -194,6 +194,14 @@ const DELETE_USER_FROM_BUDGET = async(reqBody, reqQuery) =>{
   }
 }
 
+const DELETE_CATEGORY = async (reqQuery)=>{
+  try {
+    
+  } catch (error) {
+    throw error;
+  }
+}
+
 const GET_BUDGET_PLANNER = async (reqQuery) => {
   try {
     const {email, budgetName} = reqQuery
@@ -443,6 +451,7 @@ module.exports = {
   EDIT_BUDGET_PLANNER,
   EDIT_CATEGORY_PLANNER,
   DELETE_USER_FROM_BUDGET,
+  DELETE_CATEGORY,
   GET_BUDGET_PLANNER,
   GET_CATEGORY_PLANNER,
   GET_TRANSACTION,
