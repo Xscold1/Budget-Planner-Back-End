@@ -54,7 +54,7 @@ const DELETE_USER_FROM_BUDGET = async(req, res) => {
 
 const DELETE_CATEGORY = async (req, res) => {
   try {
-    await budgetService.DELETE_USER_FROM_BUDGET(req.body, req.query)
+    await budgetService.DELETE_CATEGORY(req.body, req.query)
     
     return res.json({...SUCCESS_MESSAGE.DELETED_SUCCESSFULLY});
   } catch (error) {

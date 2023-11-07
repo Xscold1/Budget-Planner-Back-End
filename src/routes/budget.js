@@ -17,5 +17,4 @@ router.get('/budget/get-insight',budgetController.GET_INSIGHT);
 router.get('/budget/get-all-budget-name',budgetController.GET_ALL_BUDGET_NAME);
 router.get('/budget/get-all-user-included',budgetController.GET_ALL_USER_INCLUDED_IN_JOINT_ACCOUNT);
 
-
 module.exports = router; 
