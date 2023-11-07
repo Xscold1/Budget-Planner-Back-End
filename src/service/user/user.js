@@ -67,7 +67,7 @@ const LOGIN = async (reqBody) => {
         const payload = {
           data: {
             defaultBudget: null,
-            token:token
+            token:token,
           },
         };
 
@@ -133,8 +133,6 @@ const EDIT_PROFILE = async (reqBody, reqQuery, reqPath) => {
 
     const uploadImage = await cloudinary.uploader.upload(reqPath)
 
-    const userId = await findUserId(email)
-
     const findUser = await USER.findOne({email:email})
 
     if(!password) {
@@ -144,7 +142,9 @@ const EDIT_PROFILE = async (reqBody, reqQuery, reqPath) => {
         imageUrl: uploadImage.url
       }
       
-      const updateUser = await USER.findOneAndUpdate({userId:userId}, createUserPayload, {new:true})
+      const updateUser = await USER.findOneAndUpdate({email:email}, createUserPayload, {new:true})
+
+      console.log(updateUser)
 
       return updateUser
 
@@ -161,7 +161,7 @@ const EDIT_PROFILE = async (reqBody, reqQuery, reqPath) => {
         imageUrl: uploadImage.url
       }
 
-      const updateUser = await USER.findOneAndUpdate({userId:userId}, createUserPayload, {new:true})
+      const updateUser = await USER.findOneAndUpdate({email:email}, createUserPayload, {new:true})
 
       return updateUser
     
