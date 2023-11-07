@@ -109,6 +109,13 @@ const LOGIN = async (reqBody) => {
       }
     });
 
+    const checkIfTwoAuthExist = TWOAUTH.findOne({email:email})
+
+    if(checkIfTwoAuthExist){
+      await TWOAUTH.updateOne({email:email}, {$push:{code:twoFactorCode}})
+      return true
+    }
+
     await TWOAUTH.create({email: userEmail, code: twoFactorCode})
 
     return true
@@ -239,11 +246,9 @@ const VERIFY_2FA = async(reqBody,reqQuery) => {
 
     const {code} = reqBody
 
-    const checkCode = await TWOAUTH.findOne({email: email})
+    const checkCode = await TWOAUTH.findOne({email: email, code: {$in:[code]}})
 
     if(!checkCode) throw (ERROR_MESSAGE.USER_ERROR_DO_NOT_EXIST)
-
-    if(checkCode.code !== code) throw (ERROR_MESSAGE.ERROR_INVALID_TWO_AUTH)
 
     const findUser = await USER.findOne({ email: email });
 
@@ -324,5 +329,4 @@ module.exports = {
   VERIFY_2FA,
   TOGGLE_2FA,
   LOGOUT
- 
 }

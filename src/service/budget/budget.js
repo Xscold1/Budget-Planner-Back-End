@@ -67,7 +67,7 @@ const EXPENSE_ALLOCATOR = async (reqBody, reqQuery) => {
 
     const curBudget = await BUDGET.findOne({userId: {$in:[userId]}, budgetName:budgetName})
 
-    await BUDGET.findOneAndUpdate({ userId: { $in: [userId] }, budgetName: budgetName, [`${expenseType}.name`]: category },{ $push: { [`${expenseType}.$[element].expenses`]: newExpense._id } },{ arrayFilters: [{ 'element.name': category } ]});
+    await BUDGET.findOneAndUpdate({ userId:{$in: [userId]},budgetName:budgetName,[`${expenseType}.name`]: category },{$push:{[`${expenseType}.$[element].expenses`]:newExpense._id }},{arrayFilters:[{ 'element.name': category }]});
     
     const expense = Number(curBudget.totalExpenses) + Number(amount);
     
@@ -173,6 +173,22 @@ const EDIT_CATEGORY_PLANNER = async (reqBody, reqQuery) =>{
 
     return updateBudgetCategory;
 
+  } catch (error) {
+    throw error;
+  }
+}
+
+const DELETE_USER_FROM_BUDGET = async(reqBody, reqQuery) =>{
+  try {
+    const {email, budgetName} = reqQuery
+
+    const {userEmail} = reqBody
+
+    const userId = await findUserId(userEmail)
+
+    await BUDGET.findOneAndUpdate({email: email, budgetName: budgetName}, {$pull:{userId:userId}})
+
+    return true
   } catch (error) {
     throw error;
   }
@@ -426,6 +442,7 @@ module.exports = {
   ADD_USER,
   EDIT_BUDGET_PLANNER,
   EDIT_CATEGORY_PLANNER,
+  DELETE_USER_FROM_BUDGET,
   GET_BUDGET_PLANNER,
   GET_CATEGORY_PLANNER,
   GET_TRANSACTION,

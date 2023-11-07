@@ -8,6 +8,7 @@ router.post('/budget/expense',budgetController.EXPENSE_ALLOCATOR);
 router.post('/budget/add-user',budgetController.ADD_USER);
 router.put('/budget/edit-budget-allocation',budgetController.EDIT_BUDGET_PLANNER);
 router.put('/budget/edit-budget-category',budgetController.EDIT_CATEGORY_PLANNER);
+router.put('/budget/delete-user-from-budget',budgetController.DELETE_USER_FROM_BUDGET);
 router.get('/budget/get-budget-allocation',budgetController.GET_BUDGET_PLANNER);
 router.get('/budget/get-budget-category',budgetController.GET_CATEGORY_PLANNER);
 router.get('/budget/get-transactions',budgetController.GET_TRANSACTION)

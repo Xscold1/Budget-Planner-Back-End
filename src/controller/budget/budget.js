@@ -30,7 +30,6 @@ const EXPENSE_ALLOCATOR = async (req, res) => {
   }
 }
 
-
 const ADD_USER = async (req, res) => {
   try {
     const response = await budgetService.ADD_USER(req.body, req.query)
@@ -38,6 +37,17 @@ const ADD_USER = async (req, res) => {
     return res.json({...SUCCESS_MESSAGE.UPDATE_NOTIFICATION, response});
   } catch (error) {
     console.log(error);
+    if(error.message) return res.json(error);
+  }
+}
+
+const DELETE_USER_FROM_BUDGET = async(req, res) => {
+  try {
+    await budgetService.DELETE_USER_FROM_BUDGET(req.body, req.query)
+    
+    return res.json({...SUCCESS_MESSAGE.DELETED_SUCCESSFULLY});
+  } catch (error) {
+    onsole.log(error);
     if(error.message) return res.json(error);
   }
 }
@@ -133,6 +143,7 @@ module.exports = {
   BUDGET_PLANNER_ALLOCATOR,
   EXPENSE_ALLOCATOR,
   ADD_USER,
+  DELETE_USER_FROM_BUDGET,
   GET_BUDGET_PLANNER,
   GET_CATEGORY_PLANNER,
   GET_TRANSACTION,

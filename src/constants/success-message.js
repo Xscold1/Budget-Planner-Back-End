@@ -76,8 +76,8 @@ const successMessage = {
     statusCode: STATUS_CODE.SUCCESS,
     message: 'Analyze successfully',
   },
-  //nodemailers 
 
+  //nodemailers 
   SENT_NEW_PASSWORD_TO_EMAIL:{
     status: STATUS.OK,
     statusCode: STATUS_CODE.SUCCESS,
@@ -100,6 +100,12 @@ const successMessage = {
     status: STATUS.OK,
     statusCode: STATUS_CODE.SUCCESS,
     message: 'DISABLED 2FA',
+  },
+
+  DELETED_SUCCESSFULLY:{
+    status: STATUS.OK,
+    statusCode: STATUS_CODE.SUCCESS,
+    message: 'Deleted successfully',
   },
 }
 

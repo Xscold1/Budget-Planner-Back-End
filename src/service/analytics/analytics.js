@@ -6,13 +6,6 @@ const findUserId = require('../../utils/findUserId')
 
 //model
 const BUDGET = require('../../models/budget-model')
-const EXPENSES = require('../../models/expense-model')
-
-//library
-const DecisionTree = require('decision-tree');
-const fs = require('fs');
-const csv = require('csv-parser')
-const csvFilePath = (__dirname +"/Dataset.csv")
 
 const ANALYZE = async (reqQuery) =>{
   try {
@@ -47,15 +40,11 @@ const ANALYZE = async (reqQuery) =>{
       }
     }
 
-    if(overspentItems.length > 0) {
+    if(overspentItems.length < 0) {
       return "Your doing great on your budgeting keep it up"
     }
 
-    for(let i = 0; i < overspentItems.length; i++) {
-
-    }
-
-    return overspentItems;
+    return {overspentItems};
   }
   catch (error){
     throw error

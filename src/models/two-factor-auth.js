@@ -7,9 +7,9 @@ const twoAuth = new Schema({
         index: { unique: true },
         required: true
     },
-    code:{
+    code:[{
       type: Number,
-    },
+    }],
     checkIf2FAIsCorreact:{
       type: 'Boolean',
       default: false
