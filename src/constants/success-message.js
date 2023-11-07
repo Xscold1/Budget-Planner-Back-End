@@ -70,6 +70,12 @@ const successMessage = {
     statusCode: STATUS_CODE.SUCCESS,
     message: 'Updated Successfully',
   },
+
+  ANALYZE_SUCCESSFULLY:{
+    status: STATUS.OK,
+    statusCode: STATUS_CODE.SUCCESS,
+    message: 'Analyze successfully',
+  },
   //nodemailers 
 
   SENT_NEW_PASSWORD_TO_EMAIL:{

@@ -69,7 +69,6 @@ const EXPENSE_ALLOCATOR = async (reqBody, reqQuery) => {
 
     await BUDGET.findOneAndUpdate({ userId: { $in: [userId] }, budgetName: budgetName, [`${expenseType}.name`]: category },{ $push: { [`${expenseType}.$[element].expenses`]: newExpense._id } },{ arrayFilters: [{ 'element.name': category } ]});
     
-    
     const expense = Number(curBudget.totalExpenses) + Number(amount);
     
     await BUDGET.findOneAndUpdate({userId: {$in:[userId]}, budgetName:budgetName}, {
