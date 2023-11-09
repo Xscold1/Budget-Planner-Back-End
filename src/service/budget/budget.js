@@ -201,11 +201,11 @@ const DELETE_CATEGORY = async (reqQuery)=>{
 
     console.log(userId)
 
-    const findArrayData = await BUDGET.find({userId:{$in:[userId]},budgetName: budgetName,[`${expenseType}.name`]: name},);
+    const findArrayData = await BUDGET.find({userId:{$in:[userId]},budgetName: budgetName,[`${expenseType}.name`]: name});
     
     // await BUDGET.findOneAndUpdate(
     //   { userId: { $in: [userId] }, budgetName: budgetName, [`${expenseType}.name`]: category },
-    //   { $push: { [`${expenseType}.$[element].expenses`]: newExpense._id } },
+    //   { $push: { e[`${expenseType}.$[element].expenses`]: newExpense._id } },
     //   { arrayFilters: [{ 'element.name': category } }
     // );
     console.log(findArrayData)

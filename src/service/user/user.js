@@ -258,6 +258,7 @@ const VERIFY_2FA = async(reqBody,reqQuery) => {
       userName: findUser.userName,
       ifNewUser: findUser.ifNewUser,
       imageUrl: findUser.imageUrl,
+      twoAuthRequired:findUser.twoAuthRequired,
     });
 
     const getDefaultBudget = await BUDGET.findOne({ userId: { $in: [findUser._id] } }, { budgetName: 1, limit: 1 });
