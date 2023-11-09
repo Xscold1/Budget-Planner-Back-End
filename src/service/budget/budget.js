@@ -196,10 +196,19 @@ const DELETE_USER_FROM_BUDGET = async(reqBody, reqQuery) =>{
 
 const DELETE_CATEGORY = async (reqQuery)=>{
   try {
-    const {email, budgetName, expenseType,name} = reqQuery
+    const {email, budgetName, expenseType , name} = reqQuery
     const userId = await findUserId(email)
 
-    const findArrayData = await BUDGET.findOne({userId:{$in:[userId]}, budgetName: budgetName, [`${expenseType}.name`]:name});
+    console.log(userId)
+
+    const findArrayData = await BUDGET.find({userId:{$in:[userId]},budgetName: budgetName,[`${expenseType}.name`]: name},);
+    
+    // await BUDGET.findOneAndUpdate(
+    //   { userId: { $in: [userId] }, budgetName: budgetName, [`${expenseType}.name`]: category },
+    //   { $push: { [`${expenseType}.$[element].expenses`]: newExpense._id } },
+    //   { arrayFilters: [{ 'element.name': category } }
+    // );
+    console.log(findArrayData)
 
     return findArrayData
   } catch (error) {
@@ -442,7 +451,7 @@ const GET_ALL_USER_INCLUDED_IN_JOINT_ACCOUNT = async (reqQuery) => {
 
     for (let user of findUserAlongWithBudget.userId){
       let getUserName = await USER.findOne({_id: user})
-      userNames.push(getUserName.userName)
+      userNames.push({userName:getUserName.userName, Images: getUserName.imageUrl})
     }
     return userNames
   } catch (error) {

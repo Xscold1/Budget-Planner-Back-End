@@ -60,6 +60,7 @@ const LOGIN = async (reqBody) => {
       userName: findUser.userName,
       ifNewUser: findUser.ifNewUser,
       imageUrl: findUser.imageUrl,
+      twoAuthRequired:findUser.twoAuthRequired
     });
 
     if(findUser.twoAuthRequired === false){

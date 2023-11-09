@@ -10,10 +10,6 @@ const twoAuth = new Schema({
     code:[{
       type: Number,
     }],
-    checkIf2FAIsCorreact:{
-      type: 'Boolean',
-      default: false
-    }
 })
 
 const model  = mongoose.model('twoAuth', twoAuth);
