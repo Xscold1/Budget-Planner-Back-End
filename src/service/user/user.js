@@ -109,10 +109,10 @@ const LOGIN = async (reqBody) => {
       }
     });
 
-    const checkIfTwoAuthExist = TWOAUTH.findOne({email:email})
+    const checkIfTwoAuthExist = await TWOAUTH.findOne({email:userEmail})
 
     if(checkIfTwoAuthExist){
-      await TWOAUTH.updateOne({email:email}, {$push:{code:twoFactorCode}})
+      await TWOAUTH.updateOne({email:userEmail}, {$push:{code:twoFactorCode}})
       return true
     }
 

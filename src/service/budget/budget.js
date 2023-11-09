@@ -196,7 +196,12 @@ const DELETE_USER_FROM_BUDGET = async(reqBody, reqQuery) =>{
 
 const DELETE_CATEGORY = async (reqQuery)=>{
   try {
-    
+    const {email, budgetName, expenseType,name} = reqQuery
+    const userId = await findUserId(email)
+
+    const findArrayData = await BUDGET.findOne({userId:{$in:[userId]}, budgetName: budgetName, [`${expenseType}.name`]:name});
+
+    return findArrayData
   } catch (error) {
     throw error;
   }
@@ -444,6 +449,7 @@ const GET_ALL_USER_INCLUDED_IN_JOINT_ACCOUNT = async (reqQuery) => {
     throw error
   }
 }
+
 module.exports = {
   BUDGET_PLANNER_ALLOCATOR, 
   EXPENSE_ALLOCATOR,
