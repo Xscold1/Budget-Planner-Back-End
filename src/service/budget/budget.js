@@ -202,27 +202,44 @@ const DELETE_USER_FROM_BUDGET = async(reqBody, reqQuery) =>{
   }
 }
 
-const DELETE_CATEGORY = async (reqQuery)=>{
+const DELETE_CATEGORY = async (reqQuery) => {
   try {
-    const {email, budgetName, expenseType , name} = reqQuery
-    const userId = await findUserId(email)
+    const { email, budgetName, expenseType, name } = reqQuery;
+    const userId = await findUserId(email);
 
-    console.log(userId)
+    // Find the updated document to get the expensesToRemove
+    const findArrayData = await BUDGET.find({
+      userId: { $in: [userId] },
+      budgetName: budgetName,
+      [`${expenseType}.name`]: name,
+    });
 
-    const findArrayData = await BUDGET.find({userId:{$in:[userId]},budgetName: budgetName,[`${expenseType}.name`]: name});
-    
-    // await BUDGET.findOneAndUpdate(
-    //   { userId: { $in: [userId] }, budgetName: budgetName, [`${expenseType}.name`]: category },
-    //   { $push: { e[`${expenseType}.$[element].expenses`]: newExpense._id } },
-    //   { arrayFilters: [{ 'element.name': category } }
-    // );
-    console.log(findArrayData)
+    // Check if findArrayData is not empty and has the expected structure
+    if (findArrayData.length > 0 && findArrayData[0][expenseType] && findArrayData[0][expenseType][0]) {
+      const expensesToRemove = findArrayData[0][expenseType][0].expenses;
 
-    return findArrayData
+      // Remove expenses from the 'expenses' collection
+      const removedExpenses = await EXPENSES.deleteMany({ _id: { $in: expensesToRemove.map(id => id.toString()) } });
+
+      // Update the budget document to remove the specified category
+      const result = await BUDGET.updateOne(
+        { userId: { $in: [userId] }, budgetName: budgetName },
+        {
+          $pull: {
+            [`${expenseType}`]: { name: name },
+          },
+        }
+      );
+
+      return true;
+    } else {
+      // Handle the case where the expected structure is not found
+      throw new Error('Category or expenses not found in the budget document.');
+    }
   } catch (error) {
     throw error;
   }
-}
+};
 
 const GET_BUDGET_PLANNER = async (reqQuery) => {
   try {
@@ -459,7 +476,7 @@ const GET_ALL_USER_INCLUDED_IN_JOINT_ACCOUNT = async (reqQuery) => {
 
     for (let user of findUserAlongWithBudget.userId){
       let getUserName = await USER.findOne({_id: user})
-      userNames.push({userName:getUserName.userName, Images: getUserName.imageUrl})
+      userNames.push({userName:getUserName.userName, Images: getUserName.imageUrl, Email: getUserName.email})
     }
     return userNames
   } catch (error) {
