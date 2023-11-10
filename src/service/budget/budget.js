@@ -232,10 +232,7 @@ const DELETE_CATEGORY = async (reqQuery) => {
       );
 
       return true;
-    } else {
-      // Handle the case where the expected structure is not found
-      throw error
-    }
+    } 
   } catch (error) {
     throw error;
   }
