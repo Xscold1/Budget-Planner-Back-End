@@ -234,7 +234,7 @@ const DELETE_CATEGORY = async (reqQuery) => {
       return true;
     } else {
       // Handle the case where the expected structure is not found
-      throw new Error('Category or expenses not found in the budget document.');
+      throw error
     }
   } catch (error) {
     throw error;
