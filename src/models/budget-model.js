@@ -28,6 +28,11 @@ const budget = new Schema({
     type: 'String',
     enums:['weekly', 'monthly'],
   },
+  lastResetDate: {
+    type: Date,
+    required: true,
+    default: Date.now()
+  },
   needs:[{
       name: {
         type: 'String'
@@ -39,7 +44,11 @@ const budget = new Schema({
       iconId:{
         type: 'String',
         required: true
-      }
+      },
+      expenses: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'expenses'
+      }]
     }],
   wants:[{
     name: {
@@ -52,7 +61,11 @@ const budget = new Schema({
     iconId:{
       type: 'String',
       required: true
-    }
+    },
+    expenses: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'expenses'
+    }]
   }],
   savings:[{
     name: {
@@ -65,7 +78,11 @@ const budget = new Schema({
     iconId:{
       type: 'String',
       required: true
-    }
+    },
+    expenses: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'expenses'
+    }]
   }],
   userId:[{
     type:mongoose.Schema.Types.ObjectId,

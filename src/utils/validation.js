@@ -1,6 +1,6 @@
 const joi = require('joi');
 
-const PASSWORD_REGEX = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[^\w\s]).{8,}$/;
+const PASSWORD_REGEX = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[^\w\s_]).{8,}$/;
 
 const userSchema = joi.object({
 
@@ -20,7 +20,7 @@ const userSchema = joi.object({
   password: joi.string().min(8).pattern(PASSWORD_REGEX, 'password').required().messages({
     "string.min": "Password must have at least 8 characters",
     "string.empty": "Password must not be empty",
-    "string.pattern.name": "Password must have at least 8 characters, no white spaces and contain at least one of the following: uppercase letters, lowercase letters, numbers and symbols"
+    "string.pattern.name": "Password must have at least 8 characters, no white spaces and contain at least one of the following: uppercase letters, lowercase letters, numbers and symbols except Underscore"
   }),
 
 });

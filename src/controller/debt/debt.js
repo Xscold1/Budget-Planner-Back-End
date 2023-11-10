@@ -21,7 +21,7 @@ const RECEIVE_AND_PAY = async(req, res) =>{
   try {
     const response  = await debtService.RECEIVE_AND_PAY(req.body, req.query)
 
-    return res.json({...SUCCESS_MESSAGE.USER_SUCCESS_ALLOCATION, response});
+    return res.json({...SUCCESS_MESSAGE.GENERAL_SUCCESS_MESSAGE, response});
 
   } catch (error) {
     console.log(error);
@@ -34,7 +34,7 @@ const GET_PAYMENTS = async (req, res) =>{
     
     const response  = await debtService.GET_PAYMENTS(req.query)
 
-    return res.json({...SUCCESS_MESSAGE.USER_SUCCESS_ALLOCATION, response});
+    return res.json({...SUCCESS_MESSAGE.GENERAL_SUCCESS_MESSAGE, response});
 
   } catch (error) {
     console.log(error);
@@ -47,7 +47,7 @@ const GET_LEND_LISTS = async (req, res) =>{
     
     const response  = await debtService.GET_LEND_LISTS(req.query)
 
-    return res.json({...SUCCESS_MESSAGE.USER_SUCCESS_ALLOCATION, response});
+    return res.json({...SUCCESS_MESSAGE.FETCH_SUCCESS, response});
 
   } catch (error) {
     console.log(error);

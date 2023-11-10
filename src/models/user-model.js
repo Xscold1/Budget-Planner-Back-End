@@ -18,6 +18,14 @@ const user = new Schema({
     ifNewUser:{
       type: 'Boolean',
       default: true
+    },
+    imageUrl:{
+      type: 'String',
+      default:"https://res.cloudinary.com/diwlgnbqc/image/upload/v1683221873/b9vfcnko2112n69whgla.jpg"
+    },
+    twoAuthRequired:{
+      type: 'Boolean',
+      default: false
     }
 })
 

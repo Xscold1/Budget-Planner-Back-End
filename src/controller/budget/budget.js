@@ -30,12 +30,33 @@ const EXPENSE_ALLOCATOR = async (req, res) => {
   }
 }
 
-
 const ADD_USER = async (req, res) => {
   try {
     const response = await budgetService.ADD_USER(req.body, req.query)
     
     return res.json({...SUCCESS_MESSAGE.UPDATE_NOTIFICATION, response});
+  } catch (error) {
+    console.log(error);
+    if(error.message) return res.json(error);
+  }
+}
+
+const DELETE_USER_FROM_BUDGET = async(req, res) => {
+  try {
+    await budgetService.DELETE_USER_FROM_BUDGET(req.body, req.query)
+    
+    return res.json({...SUCCESS_MESSAGE.DELETED_SUCCESSFULLY});
+  } catch (error) {
+    console.log(error);
+    if(error.message) return res.json(error);
+  }
+}
+
+const DELETE_CATEGORY = async (req, res) => {
+  try {
+    const response = await budgetService.DELETE_CATEGORY(req.query)
+    
+    return res.json({...SUCCESS_MESSAGE.DELETED_SUCCESSFULLY, response});
   } catch (error) {
     console.log(error);
     if(error.message) return res.json(error);
@@ -97,7 +118,7 @@ const GET_BUDGET_PLANNER = async (req, res) =>{
   try {
     const response  = await budgetService.GET_BUDGET_PLANNER(req.query)
 
-    return res.json({...SUCCESS_MESSAGE.USER_SUCCESS_ALLOCATION, response});
+    return res.json({...SUCCESS_MESSAGE.FETCH_SUCCESS, response});
 
   } catch (error) {
     console.log(error);
@@ -109,7 +130,7 @@ const GET_ALL_BUDGET_NAME = async (req, res) =>{
   try {
     const response  = await budgetService.GET_ALL_BUDGET_NAME(req.query)
 
-    return res.json({...SUCCESS_MESSAGE.USER_SUCCESS_ALLOCATION, response});
+    return res.json({...SUCCESS_MESSAGE.FETCH_SUCCESS, response});
 
   } catch (error) {
     console.log(error);
@@ -121,18 +142,19 @@ const GET_ALL_USER_INCLUDED_IN_JOINT_ACCOUNT = async (req, res) => {
   try {
     const response  = await budgetService.GET_ALL_USER_INCLUDED_IN_JOINT_ACCOUNT(req.query)
 
-    return res.json({...SUCCESS_MESSAGE.USER_SUCCESS_ALLOCATION, response});
+    return res.json({...SUCCESS_MESSAGE.FETCH_SUCCESS, response});
   } catch (error) {
     console.log(error);
     if(error.message) return res.json(error);
   }
 }
 
-
 module.exports = {
   BUDGET_PLANNER_ALLOCATOR,
   EXPENSE_ALLOCATOR,
   ADD_USER,
+  DELETE_USER_FROM_BUDGET,
+  DELETE_CATEGORY,
   GET_BUDGET_PLANNER,
   GET_CATEGORY_PLANNER,
   GET_TRANSACTION,

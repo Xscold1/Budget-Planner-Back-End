@@ -24,7 +24,7 @@ const BORROW_AND_LEND = async(reqBody , reqQuery) =>{
     
     const createPayload = {
       dueDate,
-      totalDebt,
+      totalDebt: totalDebt + ((interest / 100) * totalDebt),
       balance : totalDebt,
       name,
       interest,
@@ -93,6 +93,7 @@ const GET_LEND_LISTS = async (reqQuery) =>{
     throw error
   }
 }
+
 module.exports = {
   BORROW_AND_LEND,
   RECEIVE_AND_PAY,

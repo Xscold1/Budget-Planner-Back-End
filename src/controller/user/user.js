@@ -30,7 +30,9 @@ const LOGIN = async (req , res ) => {
 
     const response = await userService.LOGIN(value); 
 
-    return res.json({...SUCCESS_MESSAGE.USER_LOGIN_SUCCESS, response});
+    if(response !== true) return res.json({...SUCCESS_MESSAGE.USER_LOGIN_SUCCESS, response});
+
+    return res.json({...SUCCESS_MESSAGE.SENT_2FA_CODE_TO_EMAIL});
 
   } catch (error) {
 
@@ -44,13 +46,13 @@ const LOGIN = async (req , res ) => {
 const EDIT_PROFILE = async (req , res ) => {
   try {
 
-    const response = await userService.EDIT_PROFILE(req.body, req.query); 
+    const response = await userService.EDIT_PROFILE(req.body, req.query, req.file.path); 
 
-    return res.json({...SUCCESS_MESSAGE.USER_LOGIN_SUCCESS, response});
+    return res.json({...SUCCESS_MESSAGE.UPDATE_NOTIFICATION, response});
 
   } catch (error) {
     if(error.message) return res.json(error);
-
+    console.log(error);
     return res.json(ERROR_MESSAGE.GENERAL_ERROR_REQUEST);
   }
 }
@@ -60,11 +62,11 @@ const GET_USER = async (req , res ) => {
 
     const response = await userService.GET_USER(req.query); 
 
-    return res.json({...SUCCESS_MESSAGE.USER_LOGIN_SUCCESS, response});
+    return res.json({...SUCCESS_MESSAGE.FETCH_SUCCESS, response});
 
   } catch (error) {
     if(error.message) return res.json(error);
-
+    console.log(error);
     return res.json(ERROR_MESSAGE.GENERAL_ERROR_REQUEST);
   }
 }
@@ -74,19 +76,67 @@ const FORGOT_PASSWORD = async (req , res ) => {
 
     const response = await userService.FORGOT_PASSWORD(req.body); 
 
+    return res.json({...SUCCESS_MESSAGE.SENT_NEW_PASSWORD_TO_EMAIL, response});
+
+  } catch (error) {
+    if(error.message) return res.json(error);
+    console.log(error);
+    return res.json(ERROR_MESSAGE.GENERAL_ERROR_REQUEST);
+  }
+}
+
+const VERIFY_2FA = async (req , res ) => {
+  try {
+
+    const response = await userService.VERIFY_2FA(req.body,req.query); 
+
     return res.json({...SUCCESS_MESSAGE.USER_LOGIN_SUCCESS, response});
 
   } catch (error) {
     if(error.message) return res.json(error);
-
+    console.log(error);
     return res.json(ERROR_MESSAGE.GENERAL_ERROR_REQUEST);
   }
 }
+
+const TOGGLE_2FA = async (req, res) =>{
+  try {
+
+    const response = await userService.TOGGLE_2FA(req.query);
+
+    if(response === true) return res.json({...SUCCESS_MESSAGE.SUCCESS_2FA_ENABLED});
+
+    return res.json({...SUCCESS_MESSAGE.SUCCESS_2FA_DISABLED});
+
+  } catch (error) {
+    if(error.message) return res.json(error);
+    console.log(error);
+    return res.json(ERROR_MESSAGE.GENERAL_ERROR_REQUEST);
+  }
+}
+
+const LOGOUT = async (req, res) =>{
+  try {
+
+    await userService.LOGOUT(req.query);
+
+    return res.json({...SUCCESS_MESSAGE.USER_LOGOUT_SUCCESS});
+
+  } catch (error) {
+    if(error.message) return res.json(error);
+    console.log(error);
+    return res.json(ERROR_MESSAGE.GENERAL_ERROR_REQUEST);
+  }
+}
+
 
 module.exports = {
   REGISTER,
   LOGIN,
   EDIT_PROFILE,
   GET_USER,
-  FORGOT_PASSWORD
+  FORGOT_PASSWORD,
+  VERIFY_2FA,
+  TOGGLE_2FA,
+  LOGOUT
 }

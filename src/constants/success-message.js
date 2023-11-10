@@ -28,16 +28,23 @@ const successMessage = {
     message:'Logout Successfully'
   },
 
+  USER_LOGIN_SUCCESS: {
+    status: STATUS.OK,
+    statusCode:STATUS_CODE.SUCCESS,
+    message:'Login Successfully'
+  },
+  //debt
+
   DEBT_CREATED_SUCCESSFULLY:{
     status: STATUS.OK,
     statusCode:STATUS_CODE.SUCCESS,
     message:'Debt created successfully'
   },
 
-  USER_LOGIN_SUCCESS: {
+  PAID_SUCCESSFULLY:{
     status: STATUS.OK,
     statusCode:STATUS_CODE.SUCCESS,
-    message:'Login Successfully'
+    message:'Pain Successfully'
   },
 
   FETCH_SUCCESS:{
@@ -63,7 +70,43 @@ const successMessage = {
     statusCode: STATUS_CODE.SUCCESS,
     message: 'Updated Successfully',
   },
-  
+
+  ANALYZE_SUCCESSFULLY:{
+    status: STATUS.OK,
+    statusCode: STATUS_CODE.SUCCESS,
+    message: 'Analyze successfully',
+  },
+
+  //nodemailers 
+  SENT_NEW_PASSWORD_TO_EMAIL:{
+    status: STATUS.OK,
+    statusCode: STATUS_CODE.SUCCESS,
+    message: 'New password is sent to your email address',
+  },
+
+  SENT_2FA_CODE_TO_EMAIL:{
+    status: STATUS.OK,
+    statusCode: STATUS_CODE.SUCCESS,
+    message: 'Your 2fa code was sent to your email address',
+  },
+
+  SUCCESS_2FA_ENABLED:{
+    status: STATUS.OK,
+    statusCode: STATUS_CODE.SUCCESS,
+    message: 'Enable 2FA ',
+  },
+
+  SUCCESS_2FA_DISABLED:{
+    status: STATUS.OK,
+    statusCode: STATUS_CODE.SUCCESS,
+    message: 'DISABLED 2FA',
+  },
+
+  DELETED_SUCCESSFULLY:{
+    status: STATUS.OK,
+    statusCode: STATUS_CODE.SUCCESS,
+    message: 'Deleted successfully',
+  },
 }
 
 
