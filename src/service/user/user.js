@@ -132,7 +132,39 @@ const EDIT_PROFILE = async (reqBody, reqQuery, reqPath) => {
     
     const { password, newPassword, userName} = reqBody
 
-    const uploadImage = await cloudinary.uploader.upload(reqPath)
+    if(!reqPath){
+
+      const findUser = await USER.findOne({email:email})
+  
+      if(!password) {
+  
+        const createUserPayload = {
+          userName,
+        }
+        const updateUser = await USER.findOneAndUpdate({email:email}, createUserPayload, {new:true})
+  
+        console.log(updateUser)
+  
+        return updateUser
+  
+      }
+        const comparePassword = await bcrypt.compare(password, findUser.password)
+  
+        if (!comparePassword) throw(ERROR_MESSAGE.USER_ERROR_INVALID_PASSWORD)
+  
+        const hashPassword = bcrypt.hashSync(newPassword,saltRounds)
+  
+        const createUserPayload = {
+          userName,
+          password: hashPassword,
+        }
+  
+        const updateUser = await USER.findOneAndUpdate({email:email}, createUserPayload, {new:true})
+  
+        return updateUser
+    }
+
+    const uploadImage = await cloudinary.uploader.upload(reqPath.path)
 
     const findUser = await USER.findOne({email:email})
 

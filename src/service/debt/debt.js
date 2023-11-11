@@ -12,11 +12,12 @@ const DEBT = require('../../models/debt-model')
 const BORROW_AND_LEND = async(reqBody , reqQuery) =>{
   try {
     const {email} = reqQuery
-    const {dueDate, name, interest, status, totalDebt, debtType} = reqBody
+    const {dueDate, name, interest, totalDebt, debtType} = reqBody
 
     const userId = await findUserId(email)
 
     const checkIfDebtExist = await DEBT.findOne({userId:userId, name:name, debtType:debtType})
+
 
     if(checkIfDebtExist && checkIfDebtExist.status !== 'paid' ) {
       throw (ERROR_MESSAGE.DEBT_ALEADY_EXIST)
@@ -25,13 +26,13 @@ const BORROW_AND_LEND = async(reqBody , reqQuery) =>{
     const createPayload = {
       dueDate,
       totalDebt: totalDebt + ((interest / 100) * totalDebt),
-      balance : totalDebt,
+      balance : totalDebt + ((interest / 100) * totalDebt),
       name,
       interest,
-      status,
       userId:userId,
       debtType: debtType
     }
+    
     const createDebt = await DEBT.create(createPayload)
 
     return createDebt
@@ -51,13 +52,14 @@ const RECEIVE_AND_PAY = async(reqBody, reqQuery) =>{
 
     const checkIfDebtIsPaid = await DEBT.findOne({userId:userId, name:name})
 
-    if(checkIfDebtIsPaid.totalDebt <= 0 ){
-      const updateDebtStatus = await DEBT.findOneAndUpdate({userId:userId, name:name, debtType:debtType}, {status: "paid"}, {new: true})
-      return updateDebtStatus
-    }
-
+    
     const payDebt = await DEBT.findOneAndUpdate({userId:userId, name: name, debtType:debtType} , {$inc:{"balance": -payments.amount},$push:{payments:{ amount:payments.amount, paymentDate:getDateToday()}}}, {new: true})
 
+    if(payDebt.balance <= 0 ){
+      const updateDebtStatus = await DEBT.findOneAndUpdate({userId:userId, name:name, debtType:debtType}, {status: "paid"}, {new: true})
+
+      return updateDebtStatus
+    }
     return payDebt
   } catch (error) {
     throw error

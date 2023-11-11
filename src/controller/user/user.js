@@ -46,7 +46,7 @@ const LOGIN = async (req , res ) => {
 const EDIT_PROFILE = async (req , res ) => {
   try {
 
-    const response = await userService.EDIT_PROFILE(req.body, req.query, req.file.path); 
+    const response = await userService.EDIT_PROFILE(req.body, req.query, req.file); 
 
     return res.json({...SUCCESS_MESSAGE.UPDATE_NOTIFICATION, response});
 

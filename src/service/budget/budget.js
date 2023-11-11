@@ -120,23 +120,19 @@ const ADD_USER = async (reqBody, reqQuery) =>{
   try {
     const {userEmail} = reqBody
 
+    const {email, budgetName} = reqQuery
+    //find the user that you want to add 
     const findUserEmail = await USER.findOne({email:userEmail})
-
     if(!findUserEmail) throw (ERROR_MESSAGE.USER_ERROR_DO_NOT_EXIST)
 
-    const {email, budgetName} = reqQuery
-
+    //find the user id of the user who owns the account 
     const userId = await findUserId(email)
-
-    const findUser = await USER.findOne({email: userEmail})
-
-    if(!findUser) throw (ERROR_MESSAGE.USER_ERROR_DO_NOT_EXIST)
 
     const checkIfUserAlreadyExistInBudget = await BUDGET.findOne({userId:{$in:[findUserEmail._id]}, budgetName: budgetName})
 
     if(checkIfUserAlreadyExistInBudget) throw (ERROR_MESSAGE.USER_ALREADY_EXIST_IN_THE_BUDGET)
 
-    const addUserToBudget = await BUDGET.findOneAndUpdate({budgetName:budgetName, userId: {$in:[userId]}}, {$push: {userId: findUser._id}}, {new: true})
+    const addUserToBudget = await BUDGET.findOneAndUpdate({budgetName:budgetName, userId: {$in:[userId]}}, {$push: {userId: findUserEmail._id}}, {new: true})
 
     return addUserToBudget
   } catch (error) {
