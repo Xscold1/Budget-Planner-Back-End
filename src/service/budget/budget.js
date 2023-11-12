@@ -240,7 +240,7 @@ const GET_BUDGET_PLANNER = async (reqQuery) => {
 
     const userId = await findUserId(email)
 
-    const findBudget = await BUDGET.findOne({userId: {$in:[userId]}, budgetName:budgetName}, { '_id': false})
+    const findBudget = await BUDGET.findOne({userId: {$in:[userId]}, budgetName:budgetName}, { '_id': false}).populate('needs.expenses wants.expenses savings.expenses');
 
     return findBudget;
   } catch (error) {
