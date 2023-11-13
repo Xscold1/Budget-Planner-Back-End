@@ -20,7 +20,6 @@ const BORROW_AND_LEND = async(reqBody , reqQuery) =>{
 
     const checkIfDebtExist = await DEBT.findOne({userId:userId, name:name, debtType:debtType})
 
-
     if(checkIfDebtExist && checkIfDebtExist.status !== 'paid' ) {
       throw (ERROR_MESSAGE.DEBT_ALEADY_EXIST)
     }
@@ -52,13 +51,15 @@ const RECEIVE_AND_PAY = async(reqBody, reqQuery) =>{
 
     const {payments, name, debtType} = reqBody
 
-    const payDebt = await DEBT.findOneAndUpdate({userId:userId, name: name, debtType:debtType} , {$inc:{"balance": -payments.amount},$push:{payments:{ amount:payments.amount, paymentDate:getDateToday()}}}, {new: true})
+    const findDebt = await DEBT.findOne({userId:userId, name: name, debtType:debtType})
 
-    
+    if(!findDebt) throw (ERROR_MESSAGE.DEBT_DO_NOT_EXIST)
 
+    const payDebt = await DEBT.findOneAndUpdate({userId:userId, name: name, debtType:debtType, status:"Still Paying"} , {$inc:{"balance": -payments.amount},$push:{payments:{ amount:payments.amount, paymentDate:getDateToday()}}}, {new: true})
+
+    if(!payDebt) throw(ERROR_MESSAGE.DEBT_ALEADY_FULLY_PAID)
     if(payDebt.balance <= 0 ){
       const updateDebtStatus = await DEBT.findOneAndUpdate({userId:userId, name:name, debtType:debtType}, {status: "paid"}, {new: true})
-
       return updateDebtStatus
     }
 

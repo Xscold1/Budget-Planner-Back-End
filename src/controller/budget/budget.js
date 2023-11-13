@@ -149,6 +149,15 @@ const GET_ALL_USER_INCLUDED_IN_JOINT_ACCOUNT = async (req, res) => {
   }
 }
 
+const DOWNLOAD_CSV = async (req, res) => {
+  try {
+    
+  } catch (error) {
+    console.log(error);
+    if(error.message) return res.json(error);
+  }
+}
+
 module.exports = {
   BUDGET_PLANNER_ALLOCATOR,
   EXPENSE_ALLOCATOR,
@@ -162,5 +171,6 @@ module.exports = {
   EDIT_CATEGORY_PLANNER,
   GET_INSIGHT,
   GET_ALL_BUDGET_NAME,
-  GET_ALL_USER_INCLUDED_IN_JOINT_ACCOUNT
+  GET_ALL_USER_INCLUDED_IN_JOINT_ACCOUNT,
+  DOWNLOAD_CSV
 }

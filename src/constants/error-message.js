@@ -75,6 +75,18 @@ const errorMessage = {
     message: 'You still have an outstanding balance to this person',
   },
 
+  DEBT_DO_NOT_EXIST:{
+    status: STATUS.FAILED,
+    statusCode: STATUS_CODE.FAILED,
+    message: 'Debt Do not exist',
+  },
+
+  DEBT_ALEADY_FULLY_PAID:{
+    status: STATUS.FAILED,
+    statusCode: STATUS_CODE.FAILED,
+    message: 'You are already fully paid ',
+  },
+
   ERROR_INVALID_TWO_AUTH:{
     status: STATUS.FAILED,
     statusCode: STATUS_CODE.FAILED,
