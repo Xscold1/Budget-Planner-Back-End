@@ -361,7 +361,7 @@ const GET_INSIGHT = async (reqQuery) =>{
 
 
     if(type === 'monthly'){
-      const getExpenses = await EXPENSES.aggregate([{$match:{userId:{$in:[userId]}, budgetName:budgetName, $expr:{$eq:[{"$month":"$createdAt"}, Number(month)], $eq:[{"$year":"$createdAt"}, Number(year)]}}}, {$group:{_id:{month:{$month:"$createdAt"}},expenses_this_month:{
+      const getExpenses = await EXPENSES.aggregate([{$match:{userId:{$in:[userId]}, budgetName:budgetName, $expr:{$eq:[{"$month":"$createdAt"}, Number(month)], $eq:[{"$year":"$createdAt"}, Number(year)]}}, expenseType:{$in: ['needs', 'wants', 'savings']}}, {$group:{_id:{month:{$month:"$createdAt"}},expenses_this_month:{
             $push: {
               category:"$category",
               name:"$name",
@@ -386,7 +386,7 @@ const GET_INSIGHT = async (reqQuery) =>{
       });
     return categories
   }else if (type === 'yearly'){
-    const getExpenses = await EXPENSES.aggregate([{$match:{userId:{$in:[userId]}, budgetName:budgetName, $expr:{$eq:[{"$year":"$createdAt"}, Number(year)]}}}, {$group:{_id:{year:{$year:"$createdAt"}},expenses_this_year:{
+    const getExpenses = await EXPENSES.aggregate([{$match:{userId:{$in:[userId]}, budgetName:budgetName, $expr:{$eq:[{"$year":"$createdAt"}, Number(year)]}}, expenseType:{$in: ['needs', 'wants', 'savings']}}, {$group:{_id:{year:{$year:"$createdAt"}},expenses_this_year:{
           $push: {
             category:"$category",
             name:"$name",
@@ -412,7 +412,7 @@ const GET_INSIGHT = async (reqQuery) =>{
     return categories
   }else if (type === 'weekly'){
 
-    const getExpenses = await EXPENSES.aggregate([{$match:{userId:{$in:[userId]},budgetName:budgetName, $expr:{createdAt:{$gte:["$createdAt", startDate]}},  $expr:{createdAt:{$lte:["$createdAt", endDate]}}}}, {$group:{_id:{week:{$week:"$createdAt"}},expenses_this_week:{
+    const getExpenses = await EXPENSES.aggregate([{$match:{userId:{$in:[userId]},budgetName:budgetName, $expr:{createdAt:{$gte:["$createdAt", startDate]}},  $expr:{createdAt:{$lte:["$createdAt", endDate]}}}, expenseType:{$in: ['needs', 'wants', 'savings']}}, {$group:{_id:{week:{$week:"$createdAt"}},expenses_this_week:{
           $push: {
             category:"$category",
             name:"$name",

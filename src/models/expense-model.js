@@ -2,23 +2,11 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const expenses = new Schema({
-  amount:{
-    type: "Number",
-    default: 0,
-  },
-  createdAt:{
-    type: "Date",
-  },
-  note:{
-    type: "String",
-  },
-  category:{
-    type: "String",
-  },
-  expenseType: {
-    type: "String",
-    enums:["needs", "wants", "savings"]
-  },
+  amount:Number,
+  createdAt:Date,
+  note:String,
+  category:String,
+  expenseType:String,
   budgetName:String,
   userId:{
     type: mongoose.Schema.Types.ObjectId,
