@@ -78,7 +78,7 @@ const RECEIVE_AND_PAY = async(reqBody, reqQuery) =>{
       }
     );
 
-    if(payDebt.debtType === "borrow"){
+    if(payDebt.debtType === "borrowed"){
       const expensesPayload = {
         amount:payments.amount,
         createdAt:getDateToday(),
