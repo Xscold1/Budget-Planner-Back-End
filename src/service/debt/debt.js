@@ -8,7 +8,9 @@ const getDateToday = require('../../utils/getDateToday');
 
 //models
 const DEBT = require('../../models/debt-model')
+const EXPENSES = require('../../models/expense-model')
 
+//api
 const BORROW_AND_LEND = async(reqBody , reqQuery) =>{
   try {
     const {email} = reqQuery
@@ -17,7 +19,6 @@ const BORROW_AND_LEND = async(reqBody , reqQuery) =>{
     const userId = await findUserId(email)
 
     const checkIfDebtExist = await DEBT.findOne({userId:userId, name:name, debtType:debtType})
-
 
     if(checkIfDebtExist && checkIfDebtExist.status !== 'paid' ) {
       throw (ERROR_MESSAGE.DEBT_ALEADY_EXIST)
@@ -44,22 +45,58 @@ const BORROW_AND_LEND = async(reqBody , reqQuery) =>{
 const RECEIVE_AND_PAY = async(reqBody, reqQuery) =>{
   try {
 
-    const {email} = reqQuery
+    const {email, budgetName} = reqQuery
+
+    process.env.TZ
+
+    const dateNow = new Date()
 
     const userId = await findUserId(email)
 
     const {payments, name, debtType} = reqBody
 
-    const checkIfDebtIsPaid = await DEBT.findOne({userId:userId, name:name})
+    const findDebt = await DEBT.findOne({userId:userId, name: name, debtType:debtType})
 
-    
-    const payDebt = await DEBT.findOneAndUpdate({userId:userId, name: name, debtType:debtType} , {$inc:{"balance": -payments.amount},$push:{payments:{ amount:payments.amount, paymentDate:getDateToday()}}}, {new: true})
+    if(!findDebt) throw (ERROR_MESSAGE.DEBT_DO_NOT_EXIST)
+
+    const payDebt = await DEBT.findOneAndUpdate(
+      {
+        userId: userId,
+        name:name,
+        debtType: debtType,
+        status: "Still Paying",
+      },
+      {
+        $inc: { "balance": -payments.amount },
+        $push: {
+          payments: { amount: payments.amount, paymentDate: getDateToday() },
+        },
+      },
+      {
+        new: true,
+        // Add a projection to ensure that the update operation doesn't set the balance below 0
+      }
+    );
+
+    if(payDebt.debtType === "borrowed"){
+      const expensesPayload = {
+        amount:payments.amount,
+        createdAt:getDateToday(),
+        note:`payment to  ${name}`,
+        category:"debt",
+        expenseType:"debt",
+        budgetName:budgetName,
+        userId:userId,
+      }
+      await EXPENSES.create(expensesPayload)
+    }
 
     if(payDebt.balance <= 0 ){
-      const updateDebtStatus = await DEBT.findOneAndUpdate({userId:userId, name:name, debtType:debtType}, {status: "paid"}, {new: true})
-
+      const updateDebtStatus = await DEBT.findOneAndUpdate({userId:userId, name:name, debtType:debtType}, {status: "paid", name:  `${name} ${dateNow.toDateString()} ${dateNow.toLocaleTimeString()}`, balance:0}, {new: true})
       return updateDebtStatus
     }
+
+    
     return payDebt
   } catch (error) {
     throw error

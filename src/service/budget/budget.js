@@ -15,7 +15,7 @@ const BUDGET_PLANNER_ALLOCATOR = async (reqBody, reqQuery) =>{
   try {
 
     const {email} = reqQuery
-    const {startDate, totalBudget,needs,wants,savings, budgetType, budgetName, iconId} = reqBody
+    const {startDate, totalBudget,needs,wants,savings, budgetType, budgetName, iconId, budgetRatio} = reqBody
 
     const checkIfNewUser = await USER.findOne({email: email})
 
@@ -25,7 +25,7 @@ const BUDGET_PLANNER_ALLOCATOR = async (reqBody, reqQuery) =>{
 
     const budgetPayload = {
       startDate,
-      budgetName,
+      budgetName: `${budgetName}~${email}`,
       totalBudget,
       remainingBudget: totalBudget,
       needs,
@@ -34,6 +34,8 @@ const BUDGET_PLANNER_ALLOCATOR = async (reqBody, reqQuery) =>{
       budgetType,
       iconId,
       userId,
+      budgetRatio,
+      budgetOwner:email,
     }
 
     const budget = await BUDGET.create(budgetPayload)
@@ -75,40 +77,6 @@ const EXPENSE_ALLOCATOR = async (reqBody, reqQuery) => {
       totalExpenses: expense,
       remainingBudget: Number(curBudget.totalBudget) - Number(expense),
     })
-    
-    // // Check if it's time to reset the expenses
-    // if (curBudget.budgetType === 'monthly') {
-    //   // Check if it's a new month
-    //   const today = new Date();
-    //   const lastResetDate = new Date(curBudget.lastResetDate);
-    //   console.log(today.getMonth())
-    //   console.log(lastResetDate.getMonth())
-    //   if (11 !== lastResetDate.getMonth() || today.getFullYear() !== lastResetDate.getFullYear()){
-    //     // Reset expenses for the new month
-    //     await BUDGET.findOneAndUpdate({ userId, budgetName},{
-    //         totalExpenses: 0,
-    //         remainingBudget: Number(curBudget.totalBudget),
-    //         lastResetDate: today,
-    //         expenses: [],
-    //       }
-    //     );
-    //   }
-    // } else if (curBudget.budgetType === 'weekly') {
-    //   // Check if it's a new week (assuming each week starts on Sunday)
-    //   const today = new Date();
-    //   const lastResetDate = new Date(curBudget.lastResetDate);
-
-    //   if(today.getDay() === 0 &&today - lastResetDate >= 7 * 24 * 60 * 60 * 1000) {
-    //     // Reset expenses for the new week
-    //     await BUDGET.findOneAndUpdate({ userId, budgetName },{
-    //         totalExpenses: 0,
-    //         remainingBudget: Number(curBudget.totalBudget),
-    //         lastResetDate: today,
-    //         expenses: [],
-    //       }
-    //     );
-    //   }
-    // }
 
     return newExpense;
   } catch (error) {
@@ -190,6 +158,13 @@ const DELETE_USER_FROM_BUDGET = async(reqBody, reqQuery) =>{
 
     const userId = await findUserId(userEmail)
 
+    const budget = await BUDGET.findOne({ email: email, budgetName: budgetName });
+    const userIdArray = budget.userId;
+
+    if(userIdArray[0].toString() === userId.toString()) {
+      throw (ERROR_MESSAGE.CANNOT_REMOVE_THE_BUDGET_OWNER)
+    }
+
     await BUDGET.findOneAndUpdate({email: email, budgetName: budgetName}, {$pull:{userId:userId}})
 
     return true
@@ -240,7 +215,54 @@ const GET_BUDGET_PLANNER = async (reqQuery) => {
 
     const userId = await findUserId(email)
 
-    const findBudget = await BUDGET.findOne({userId: {$in:[userId]}, budgetName:budgetName}, { '_id': false})
+    const checkIfTimeToReset = await BUDGET.findOne({userId:{$in:[userId]} , budgetName: budgetName, })
+
+        // Check if it's time to reset the expenses
+    if (checkIfTimeToReset.budgetType === 'monthly') {
+      // Check if it's a new month
+      const today = new Date();
+      const lastResetDate = new Date(checkIfTimeToReset.lastResetDate);
+      
+      if (today.getMonth() !== lastResetDate.getMonth() || today.getFullYear() !== lastResetDate.getFullYear()) {
+        // Reset expenses for the new month
+        await BUDGET.findOneAndUpdate(
+          { userId: { $in: [userId] }, budgetName: budgetName },
+          {
+            totalExpenses: 0,
+            remainingBudget: Number(checkIfTimeToReset.totalBudget),
+            lastResetDate: today,
+            $set: {
+              'needs.$[].expenses': [],
+              'wants.$[].expenses': [],
+              'savings.$[].expenses': [],
+            },
+          }
+        );
+      }
+    } else if (checkIfTimeToReset.budgetType === 'weekly') {
+      // Check if it's a new week (assuming each week starts on Sunday)
+      const today = new Date();
+      const lastResetDate = new Date(checkIfTimeToReset.lastResetDate);
+    
+      if (today.getDay() === 0 && today - lastResetDate >= 7 * 24 * 60 * 60 * 1000) {
+        // Reset expenses for the new week
+        await BUDGET.findOneAndUpdate(
+          { userId: { $in: [userId] }, budgetName: budgetName },
+          {
+            totalExpenses: 0,
+            remainingBudget: Number(checkIfTimeToReset.totalBudget),
+            lastResetDate: today,
+            $set: {
+              'needs.$[].expenses': [],
+              'wants.$[].expenses': [],
+              'savings.$[].expenses': [],
+            },
+          }
+        );
+      }
+    }
+
+    const findBudget = await BUDGET.findOne({userId: {$in:[userId]}, budgetName:budgetName}, { '_id': false}).populate('needs.expenses wants.expenses savings.expenses');
 
     return findBudget;
   } catch (error) {
@@ -361,7 +383,7 @@ const GET_INSIGHT = async (reqQuery) =>{
 
 
     if(type === 'monthly'){
-      const getExpenses = await EXPENSES.aggregate([{$match:{userId:{$in:[userId]}, budgetName:budgetName, $expr:{$eq:[{"$month":"$createdAt"}, Number(month)], $eq:[{"$year":"$createdAt"}, Number(year)]}}}, {$group:{_id:{month:{$month:"$createdAt"}},expenses_this_month:{
+      const getExpenses = await EXPENSES.aggregate([{$match:{userId:{$in:[userId]}, budgetName:budgetName, $expr:{$eq:[{"$month":"$createdAt"}, Number(month)], $eq:[{"$year":"$createdAt"}, Number(year)]}, expenseType:{$in: ['needs', 'wants', 'savings']}}}, {$group:{_id:{month:{$month:"$createdAt"}},expenses_this_month:{
             $push: {
               category:"$category",
               name:"$name",
@@ -386,7 +408,7 @@ const GET_INSIGHT = async (reqQuery) =>{
       });
     return categories
   }else if (type === 'yearly'){
-    const getExpenses = await EXPENSES.aggregate([{$match:{userId:{$in:[userId]}, budgetName:budgetName, $expr:{$eq:[{"$year":"$createdAt"}, Number(year)]}}}, {$group:{_id:{year:{$year:"$createdAt"}},expenses_this_year:{
+    const getExpenses = await EXPENSES.aggregate([{$match:{userId:{$in:[userId]}, budgetName:budgetName, $expr:{$eq:[{"$year":"$createdAt"}, Number(year)]}, expenseType:{$in: ['needs', 'wants', 'savings']}}}, {$group:{_id:{year:{$year:"$createdAt"}},expenses_this_year:{
           $push: {
             category:"$category",
             name:"$name",
@@ -412,7 +434,7 @@ const GET_INSIGHT = async (reqQuery) =>{
     return categories
   }else if (type === 'weekly'){
 
-    const getExpenses = await EXPENSES.aggregate([{$match:{userId:{$in:[userId]},budgetName:budgetName, $expr:{createdAt:{$gte:["$createdAt", startDate]}},  $expr:{createdAt:{$lte:["$createdAt", endDate]}}}}, {$group:{_id:{week:{$week:"$createdAt"}},expenses_this_week:{
+    const getExpenses = await EXPENSES.aggregate([{$match:{userId:{$in:[userId]},budgetName:budgetName, $expr:{createdAt:{$gte:["$createdAt", startDate]}},  $expr:{createdAt:{$lte:["$createdAt", endDate]}}, expenseType:{$in: ['needs', 'wants', 'savings']}}}, {$group:{_id:{week:{$week:"$createdAt"}},expenses_this_week:{
           $push: {
             category:"$category",
             name:"$name",
@@ -477,6 +499,14 @@ const GET_ALL_USER_INCLUDED_IN_JOINT_ACCOUNT = async (reqQuery) => {
   }
 }
 
+const DOWNLOAD_CSV = async () => {
+  try {
+    
+  } catch (error) {
+    throw error
+  }
+}
+
 module.exports = {
   BUDGET_PLANNER_ALLOCATOR, 
   EXPENSE_ALLOCATOR,
@@ -490,5 +520,6 @@ module.exports = {
   GET_TRANSACTION,
   GET_INSIGHT,
   GET_ALL_BUDGET_NAME,
-  GET_ALL_USER_INCLUDED_IN_JOINT_ACCOUNT
+  GET_ALL_USER_INCLUDED_IN_JOINT_ACCOUNT,
+  DOWNLOAD_CSV
 }
