@@ -34,7 +34,8 @@ const BUDGET_PLANNER_ALLOCATOR = async (reqBody, reqQuery) =>{
       budgetType,
       iconId,
       userId,
-      budgetRatio
+      budgetRatio,
+      budgetOwner:email,
     }
 
     const budget = await BUDGET.create(budgetPayload)

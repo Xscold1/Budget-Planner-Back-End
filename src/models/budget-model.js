@@ -37,6 +37,9 @@ const budget = new Schema({
     type: String,
 
   },
+  budgetOwner:{
+    type:String,
+  },
   needs:[{
       name: {
         type: 'String'
