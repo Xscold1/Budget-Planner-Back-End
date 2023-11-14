@@ -15,7 +15,7 @@ const BUDGET_PLANNER_ALLOCATOR = async (reqBody, reqQuery) =>{
   try {
 
     const {email} = reqQuery
-    const {startDate, totalBudget,needs,wants,savings, budgetType, budgetName, iconId} = reqBody
+    const {startDate, totalBudget,needs,wants,savings, budgetType, budgetName, iconId, budgetRatio} = reqBody
 
     const checkIfNewUser = await USER.findOne({email: email})
 
@@ -34,6 +34,7 @@ const BUDGET_PLANNER_ALLOCATOR = async (reqBody, reqQuery) =>{
       budgetType,
       iconId,
       userId,
+      budgetRatio
     }
 
     const budget = await BUDGET.create(budgetPayload)

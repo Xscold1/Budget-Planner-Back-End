@@ -47,6 +47,10 @@ const RECEIVE_AND_PAY = async(reqBody, reqQuery) =>{
 
     const {email, budgetName} = reqQuery
 
+    process.env.TZ
+
+    const dateNow = new Date()
+
     const userId = await findUserId(email)
 
     const {payments, name, debtType} = reqBody
@@ -55,13 +59,24 @@ const RECEIVE_AND_PAY = async(reqBody, reqQuery) =>{
 
     if(!findDebt) throw (ERROR_MESSAGE.DEBT_DO_NOT_EXIST)
 
-    const payDebt = await DEBT.findOneAndUpdate({userId:userId, name: name, debtType:debtType, status:"Still Paying"} , {$inc:{"balance": -payments.amount},$push:{payments:{ amount:payments.amount, paymentDate:getDateToday()}}}, {new: true})
-
-    if(!payDebt) throw(ERROR_MESSAGE.DEBT_ALEADY_FULLY_PAID)
-    if(payDebt.balance <= 0 ){
-      const updateDebtStatus = await DEBT.findOneAndUpdate({userId:userId, name:name, debtType:debtType}, {status: "paid"}, {new: true})
-      return updateDebtStatus
-    }
+    const payDebt = await DEBT.findOneAndUpdate(
+      {
+        userId: userId,
+         name:name,
+        debtType: debtType,
+        status: "Still Paying",
+      },
+      {
+        $inc: { "balance": -payments.amount },
+        $push: {
+          payments: { amount: payments.amount, paymentDate: getDateToday() },
+        },
+      },
+      {
+        new: true,
+        // Add a projection to ensure that the update operation doesn't set the balance below 0
+      }
+    );
 
     if(payDebt.debtType === "borrow"){
       const expensesPayload = {
@@ -75,6 +90,13 @@ const RECEIVE_AND_PAY = async(reqBody, reqQuery) =>{
       }
       await EXPENSES.create(expensesPayload)
     }
+
+    if(payDebt.balance <= 0 ){
+      const updateDebtStatus = await DEBT.findOneAndUpdate({userId:userId, name:name, debtType:debtType}, {status: "paid", name:  `${name} ${dateNow.toDateString()} ${dateNow.toLocaleTimeString()}`, balance:0}, {new: true})
+      return updateDebtStatus
+    }
+
+    
     return payDebt
   } catch (error) {
     throw error

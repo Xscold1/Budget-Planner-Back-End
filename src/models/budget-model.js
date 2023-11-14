@@ -33,6 +33,10 @@ const budget = new Schema({
     required: true,
     default: Date.now()
   },
+  budgetRatio:{
+    type: String,
+
+  },
   needs:[{
       name: {
         type: 'String'
