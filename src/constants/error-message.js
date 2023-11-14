@@ -67,7 +67,6 @@ const errorMessage = {
     message: 'User already exists in the budget.',
   },
   
-
   //debt error
   DEBT_ALEADY_EXIST:{
     status: STATUS.FAILED,
@@ -91,7 +90,14 @@ const errorMessage = {
     status: STATUS.FAILED,
     statusCode: STATUS_CODE.FAILED,
     message: 'Invalid 2fa code please try again',
+  },
+
+  CANNOT_REMOVE_THE_BUDGET_OWNER:{
+    status: STATUS.FAILED,
+    statusCode: STATUS_CODE.FAILED,
+    message: 'Cannot Remove Budget Owner',
   }
+
 }
 
 

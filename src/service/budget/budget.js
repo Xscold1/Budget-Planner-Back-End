@@ -158,6 +158,13 @@ const DELETE_USER_FROM_BUDGET = async(reqBody, reqQuery) =>{
 
     const userId = await findUserId(userEmail)
 
+    const budget = await BUDGET.findOne({ email: email, budgetName: budgetName });
+    const userIdArray = budget.userId;
+
+    if(userIdArray[0].toString() === userId.toString()) {
+      throw (ERROR_MESSAGE.CANNOT_REMOVE_THE_BUDGET_OWNER)
+    }
+
     await BUDGET.findOneAndUpdate({email: email, budgetName: budgetName}, {$pull:{userId:userId}})
 
     return true
