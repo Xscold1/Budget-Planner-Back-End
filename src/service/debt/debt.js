@@ -62,7 +62,7 @@ const RECEIVE_AND_PAY = async(reqBody, reqQuery) =>{
     const payDebt = await DEBT.findOneAndUpdate(
       {
         userId: userId,
-         name:name,
+        name:name,
         debtType: debtType,
         status: "Still Paying",
       },

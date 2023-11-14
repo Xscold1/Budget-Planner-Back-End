@@ -25,7 +25,7 @@ const BUDGET_PLANNER_ALLOCATOR = async (reqBody, reqQuery) =>{
 
     const budgetPayload = {
       startDate,
-      budgetName,
+      budgetName: `${budgetName}~${email}`,
       totalBudget,
       remainingBudget: totalBudget,
       needs,
