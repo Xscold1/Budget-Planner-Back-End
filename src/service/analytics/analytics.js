@@ -14,6 +14,17 @@ const ANALYZE = async (reqQuery) =>{
     const userId = await findUserId(email)
     
     const userBudget = await BUDGET.findOne({ userId: {$in:[userId]}, budgetName:budgetName }).populate('needs.expenses wants.expenses');
+    let isEmergencyFundsExist = false
+
+    if (userBudget && userBudget.savings) {
+      for (const saving of userBudget.savings) {
+        // Assuming the emergency fund has a predefined name like "Emergency Fund"
+        if (saving.name === 'Emergency Fund' && saving.expenses.length > 0) {
+          isEmergencyFundsExist = true;
+          break; // No need to continue checking if emergency funds are found
+        }
+      }
+    }
 
     if (!userBudget)throw(ERROR_MESSAGE.BUDGET_DOES_NOT_EXIST)
 
@@ -44,7 +55,10 @@ const ANALYZE = async (reqQuery) =>{
       return "Your doing great on your budgeting keep it up"
     }
 
-    return {overspentItems};
+    return {
+      overspentItems,
+      isEmergencyFundsExist
+    };
   }
   catch (error){
     throw error
