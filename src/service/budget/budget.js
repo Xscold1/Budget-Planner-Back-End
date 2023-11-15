@@ -177,36 +177,47 @@ const DELETE_CATEGORY = async (reqQuery) => {
   try {
     const { email, budgetName, expenseType, name } = reqQuery;
     const userId = await findUserId(email);
-
+  
     // Find the updated document to get the expensesToRemove
-    const findArrayData = await BUDGET.find({
+    const findArrayData = await BUDGET.findOne({
       userId: { $in: [userId] },
       budgetName: budgetName,
       [`${expenseType}.name`]: name,
     });
-
+  
     // Check if findArrayData is not empty and has the expected structure
-    if (findArrayData.length > 0 && findArrayData[0][expenseType] && findArrayData[0][expenseType][0]) {
-      const expensesToRemove = findArrayData[0][expenseType][0].expenses;
-
+    if (findArrayData && findArrayData[expenseType] && findArrayData[expenseType][0]) {
+      const expensesToRemove = findArrayData[expenseType][0].expenses;
+  
+      // Find all expenses to calculate the total amount
+      const findAllExpensesToRemove = await EXPENSES.find({ _id: { $in: expensesToRemove.map(id => id.toString()) } });
+  
+      const totalExpensesToRemove = findAllExpensesToRemove.reduce((total, expense) => total + expense.amount, 0);
+  
       // Remove expenses from the 'expenses' collection
       const removedExpenses = await EXPENSES.deleteMany({ _id: { $in: expensesToRemove.map(id => id.toString()) } });
-
-      // Update the budget document to remove the specified category
+  
+      // Update the budget document to remove the specified category and update total expenses
       const result = await BUDGET.updateOne(
         { userId: { $in: [userId] }, budgetName: budgetName },
         {
           $pull: {
             [`${expenseType}`]: { name: name },
           },
+          $inc: {
+            totalExpenses: -totalExpensesToRemove,
+            remainingBudget: + totalExpensesToRemove
+          },
         }
       );
-
+  
       return true;
     } 
+  
   } catch (error) {
-    throw error;
+    throw error
   }
+  
 };
 
 const GET_BUDGET_PLANNER = async (reqQuery) => {
