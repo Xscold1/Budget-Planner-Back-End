@@ -469,7 +469,7 @@ const GET_ALL_BUDGET_NAME = async (reqQuery) => {
     const {email} = reqQuery
     const userId = await findUserId(email)
 
-    const findBudgetName = BUDGET.find({userId: {$in:[userId]}}, {budgetName:1, budgetType:1, _id:0})
+    const findBudgetName = BUDGET.find({userId: {$in:[userId]}}, {budgetName:1, budgetType:1,budgetOwner:1,_id:0})
 
     return findBudgetName
   } catch (error) {
