@@ -120,16 +120,50 @@ const GET_PAYMENTS = async (reqQuery) =>{
 
 const GET_LEND_LISTS = async (reqQuery) =>{
   try {
-    const {email, debtType} = reqQuery
-    const userId = await findUserId(email)
+    const { email, debtType } = reqQuery;
+    const userId = await findUserId(email);
 
-    const getLendList = await DEBT.aggregate([{$match:{userId:userId, debtType:debtType}}])
+    // Call tz env to
+    process.env.TZ;
 
-    if(!getLendList) throw (SUCCESS_MESSAGE.FETCH_SUCCESS_NO_DATA)
+    const dateToday = new Date();
 
-    return getLendList
+    const getLendList = await DEBT.find({ userId: userId, debtType: debtType });
+
+    const overdueDebts = getLendList.filter((debt) => {
+        return debt.status !== "paid" && new Date(debt.dueDate) <= dateToday;
+    });
+
+    // Add interest and update dueDate for overdue debts
+    overdueDebts.forEach(async (overdueDebt) => {
+        const interestRate = overdueDebt.interest;
+        const principalAmount = overdueDebt.totalDebt;
+
+        // Calculate interest
+        const interestAmount = principalAmount * (interestRate / 100);
+        overdueDebt.totalDebt += interestAmount;
+
+        // Update dueDate to 1 month after the current dueDate
+        const newDueDate = new Date(overdueDebt.dueDate);
+        newDueDate.setMonth(newDueDate.getMonth() + 1);
+
+        // Handle the case where the month rolled over to the next year
+        if (newDueDate.getMonth() !== (overdueDebt.dueDate.getMonth() + 1) % 12) {
+            newDueDate.setFullYear(newDueDate.getFullYear() + 1);
+        }
+
+        overdueDebt.dueDate = newDueDate;
+
+        await overdueDebt.save();
+    });
+
+    console.log(overdueDebts);
+
+    if (!getLendList.length) throw SUCCESS_MESSAGE.FETCH_SUCCESS_NO_DATA;
+
+    return getLendList;
   } catch (error) {
-    throw error
+    throw error;
   }
 }
 
