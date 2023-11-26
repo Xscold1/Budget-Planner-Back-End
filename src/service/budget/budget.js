@@ -2,6 +2,7 @@
 const BUDGET = require('../../models/budget-model');
 const EXPENSES = require('../../models/expense-model');
 const USER = require('../../models/user-model');
+const REQ_ACCESS = require('../../models/request-access');
 
 //constants
 const ERROR_MESSAGE  = require('../../constants/error-message');
@@ -10,6 +11,7 @@ const ERROR_MESSAGE  = require('../../constants/error-message');
 const findUserId = require('../../utils/findUserId');
 const formatExpenses = require('../../utils/formatExpenses');
 const getDateToday = require('../../utils/getDateToday');
+const transporter = require('../../utils/nodemailer');
 
 const BUDGET_PLANNER_ALLOCATOR = async (reqBody, reqQuery) =>{
   try {
@@ -105,6 +107,84 @@ const ADD_USER = async (reqBody, reqQuery) =>{
     return addUserToBudget
   } catch (error) {
     throw error;
+  }
+}
+
+const GIVE_MONEY = async (reqBody, reqQuery) => {
+  try {
+    // const {email} = reqQuery
+
+    const {userEmail, budgetName, amount} = reqBody
+
+    await BUDGET.findOneAndUpdate({budgetName: budgetName, budgetOwner:userEmail} , {$inc:{totalBudget:amount}})
+
+    return true
+  } catch (error) {
+    throw error
+  }
+}
+
+const REQUEST_ACCESS = async (reqQuery) => {
+  try {
+
+    const {userEmail, budgetOwner} = reqQuery
+
+    const checkIfHasPendingRequest = await REQ_ACCESS.findOne({userEmail , budgetOwner})
+
+    if(checkIfHasPendingRequest) throw (ERROR_MESSAGE.ALREADY_HAS_PENDING_REQUEST)
+
+    await REQ_ACCESS.create({userEmail, budgetOwner})
+
+    const mailOptions = {
+      from: "budgetplanner321@gmail.com",
+      to: userEmail,
+      subject: "Account ",
+      text: `
+      Dear ${budgetOwner}
+
+      User ${userEmail} has requested to access your budgets please open the app to approve/decline their request
+      thankyou
+      
+      Sincerely,
+      B SMART APP   
+      `,
+    };
+  
+    transporter.sendMail(mailOptions, (error, info) => {
+      if(error) {
+        throw error
+      }else {
+        console.log("link sent successfully")
+      }
+    });
+
+
+    return true
+  } catch (error) {
+    throw error
+  }
+}
+
+const GRANT_ACCESS = async (reqBody, reqQuery) => {
+  try {
+    const {userEmail,budgetName} = reqBody
+
+    const {budgetOwner} = reqQuery
+
+    //find the user id of the user who owns the account 
+    const userId = await findUserId(userEmail)
+
+    const checkIfUserAlreadyExistInBudget = await BUDGET.findOne({userId:{$in:[userId]}, budgetName: budgetName})
+
+    if(checkIfUserAlreadyExistInBudget) throw (ERROR_MESSAGE.USER_ALREADY_EXIST_IN_THE_BUDGET)
+
+    const grantAccessToUser = await BUDGET.findOneAndUpdate({budgetOwner,budgetName} ,{$push: {userId:userId}}, {new: true})
+
+    await REQ_ACCESS.findOneAndDelete({budgetOwner, userEmail})
+
+    return grantAccessToUser
+  } catch (error) {
+    throw error
   }
 }
 
@@ -510,9 +590,13 @@ const GET_ALL_USER_INCLUDED_IN_JOINT_ACCOUNT = async (reqQuery) => {
   }
 }
 
-const DOWNLOAD_CSV = async () => {
+const GET_ALL_REQUEST_ACCESS = async (reqQuery) => {
   try {
-    
+    const {budgetOwner} = reqQuery
+
+    const findAllRequestAccess = await REQ_ACCESS.find({budgetOwner})
+
+    return findAllRequestAccess
   } catch (error) {
     throw error
   }
@@ -522,6 +606,9 @@ module.exports = {
   BUDGET_PLANNER_ALLOCATOR, 
   EXPENSE_ALLOCATOR,
   ADD_USER,
+  GIVE_MONEY,
+  REQUEST_ACCESS,
+  GRANT_ACCESS,
   EDIT_BUDGET_PLANNER,
   EDIT_CATEGORY_PLANNER,
   DELETE_USER_FROM_BUDGET,
@@ -532,5 +619,5 @@ module.exports = {
   GET_INSIGHT,
   GET_ALL_BUDGET_NAME,
   GET_ALL_USER_INCLUDED_IN_JOINT_ACCOUNT,
-  DOWNLOAD_CSV
+  GET_ALL_REQUEST_ACCESS
 }

@@ -107,6 +107,18 @@ const successMessage = {
     statusCode: STATUS_CODE.SUCCESS,
     message: 'Deleted successfully',
   },
+
+  MONEY_SENT_SUCCESSFULLY:{
+    status: STATUS.OK,
+    statusCode: STATUS_CODE.SUCCESS,
+    message: 'Money sent successfully',
+  },
+
+  REQUEST_ACCESS_SENT:{
+    status: STATUS.OK,
+    statusCode: STATUS_CODE.SUCCESS,
+    message: 'Request Access Sent',
+  },
 }
 
 

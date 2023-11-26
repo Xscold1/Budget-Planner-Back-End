@@ -96,6 +96,12 @@ const errorMessage = {
     status: STATUS.FAILED,
     statusCode: STATUS_CODE.FAILED,
     message: 'Cannot Remove Budget Owner',
+  },
+
+  ALREADY_HAS_PENDING_REQUEST:{
+    status: STATUS.FAILED,
+    statusCode: STATUS_CODE.FAILED,
+    message: 'There is still a pending request',
   }
 
 }

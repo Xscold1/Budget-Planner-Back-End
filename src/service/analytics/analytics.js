@@ -6,6 +6,7 @@ const findUserId = require('../../utils/findUserId')
 
 //model
 const BUDGET = require('../../models/budget-model')
+const EXPENSES = require('../../models/expense-model')
 
 const ANALYZE = async (reqQuery) =>{
   try {
@@ -65,6 +66,47 @@ const ANALYZE = async (reqQuery) =>{
   }
 }
 
+const COMPARE_EXPENSES = async (reqQuery) =>{
+  try {
+
+    const {email,budgetName, budgetType , startDate, endDate} = reqQuery
+
+    const userId = await findUserId(email)
+
+    if(budgetType ===  "monthly"){
+      const getExpenses = await EXPENSES.aggregate([
+        {
+          $match: {
+            userId: { $in: [userId] },
+            budgetName: budgetName,
+            createdAt: { $lte: endDate, $gte: startDate },
+          },
+        },
+        {
+          $group: {
+            _id: {
+              year: { $year: "$createdAt" },
+              month: { $month: "$createdAt" },
+            },
+            expenses: { $push: "$$ROOT" },
+          },
+        },
+        {
+          $sort: {
+            "_id.year": -1,
+            "_id.month": -1,
+          },
+        },
+      ]);
+      return getExpenses
+    }
+
+  } catch (error) {
+    throw error
+  }
+}
+
 module.exports = {
   ANALYZE,
+  COMPARE_EXPENSES
 }
