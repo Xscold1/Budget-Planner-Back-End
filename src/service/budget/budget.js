@@ -647,6 +647,18 @@ const GET_ALL_REQUEST_ACCESS = async (reqQuery) => {
   }
 }
 
+const GET_ALL_EXTRA_BUDGETS = async (reqQuery) => {
+  try {
+    const {budgetOwner, budgetName} = reqQuery
+
+    const findAllExtraBudget = await EXTRA_BUDGET.find({budgetOwner, budgetName})
+
+    return findAllExtraBudget
+  } catch (error) {
+    throw error
+  }
+}
+
 module.exports = {
   BUDGET_PLANNER_ALLOCATOR, 
   EXPENSE_ALLOCATOR,
@@ -666,5 +678,6 @@ module.exports = {
   GET_INSIGHT,
   GET_ALL_BUDGET_NAME,
   GET_ALL_USER_INCLUDED_IN_JOINT_ACCOUNT,
-  GET_ALL_REQUEST_ACCESS
+  GET_ALL_REQUEST_ACCESS,
+  GET_ALL_EXTRA_BUDGETS
 }

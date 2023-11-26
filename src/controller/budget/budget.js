@@ -216,6 +216,18 @@ const GET_ALL_REQUEST_ACCESS = async (req, res) => {
   }
 }
 
+const GET_ALL_EXTRA_BUDGETS = async (req, res) => {
+  try {
+    const response = await budgetService.GET_ALL_EXTRA_BUDGETS(req.query)
+    
+    return res.json({...SUCCESS_MESSAGE.FETCH_SUCCESS, response});
+  } catch (error) {
+    console.log(error);
+    if(error.message) return res.json(error);
+  }
+}
+
+
 module.exports = {
   BUDGET_PLANNER_ALLOCATOR,
   EXPENSE_ALLOCATOR,
@@ -235,5 +247,6 @@ module.exports = {
   GET_INSIGHT,
   GET_ALL_BUDGET_NAME,
   GET_ALL_USER_INCLUDED_IN_JOINT_ACCOUNT,
-  GET_ALL_REQUEST_ACCESS
+  GET_ALL_REQUEST_ACCESS,
+  GET_ALL_EXTRA_BUDGETS
 }
