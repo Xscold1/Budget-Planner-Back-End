@@ -6,6 +6,8 @@ const auth = require('../middleware/auth');
 router.post('/budget/allocation',budgetController.BUDGET_PLANNER_ALLOCATOR);
 router.post('/budget/expense',budgetController.EXPENSE_ALLOCATOR);
 router.post('/budget/add-user',budgetController.ADD_USER);
+router.post('/budget/add-extra-budget',budgetController.ADD_EXTRA_BUDGET);
+router.post('/budget/check-extra-budget',budgetController.CHECK_EXTRA_BUDGET);
 router.post('/budget/give-money',budgetController.GIVE_MONEY);
 router.post('/budget/request-access',budgetController.REQUEST_ACCESS);
 router.put('/budget/grant-access',budgetController.GRANT_ACCESS);

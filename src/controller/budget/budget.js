@@ -41,6 +41,28 @@ const ADD_USER = async (req, res) => {
   }
 }
 
+const ADD_EXTRA_BUDGET = async (req, res) => {
+  try {
+    const response = await budgetService.ADD_EXTRA_BUDGET(req.body, req.query)
+    
+    return res.json({...SUCCESS_MESSAGE.EXTRA_BUDGET_SET, response});
+  } catch (error) {
+    console.log(error);
+    if(error.message) return res.json(error);
+  }
+}
+
+const CHECK_EXTRA_BUDGET = async (req, res) => {
+  try {
+    const response = await budgetService.CHECK_EXTRA_BUDGET(req.query)
+    
+    return res.json({...SUCCESS_MESSAGE.UPDATE_NOTIFICATION});
+  } catch (error) {
+    console.log(error);
+    if(error.message) return res.json(error);
+  }
+}
+
 const GIVE_MONEY = async (req, res) => {
   try {
     const response = await budgetService.GIVE_MONEY(req.body, req.query)
@@ -67,7 +89,7 @@ const GRANT_ACCESS = async (req, res) => {
   try {
     const response = await budgetService.GRANT_ACCESS(req.body, req.query)
     
-    return res.json({...SUCCESS_MESSAGE.MONEY_SENT_SUCCESSFULLY, response});
+    return res.json({...SUCCESS_MESSAGE.ACCESS_GRANTED_SUCCESSFULLY, response});
   } catch (error) {
     console.log(error);
     if(error.message) return res.json(error);
@@ -198,6 +220,8 @@ module.exports = {
   BUDGET_PLANNER_ALLOCATOR,
   EXPENSE_ALLOCATOR,
   ADD_USER,
+  ADD_EXTRA_BUDGET,
+  CHECK_EXTRA_BUDGET,
   GIVE_MONEY,
   REQUEST_ACCESS,
   GRANT_ACCESS,

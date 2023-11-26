@@ -3,6 +3,7 @@ const BUDGET = require('../../models/budget-model');
 const EXPENSES = require('../../models/expense-model');
 const USER = require('../../models/user-model');
 const REQ_ACCESS = require('../../models/request-access');
+const EXTRA_BUDGET = require('../../models/extra-budget');
 
 //constants
 const ERROR_MESSAGE  = require('../../constants/error-message');
@@ -110,13 +111,57 @@ const ADD_USER = async (reqBody, reqQuery) =>{
   }
 }
 
+const ADD_EXTRA_BUDGET = async (reqBody, reqQuery) => {
+  try {
+    const {budgetOwner, budgetName} = reqQuery
+    const {amount, dateToBeAdded, note , } = reqBody
+
+    const createPayload = {
+      budgetOwner,
+      budgetName,
+      amount,
+      dateToBeAdded,
+      note
+    }
+
+    console.log(createPayload)
+
+    await EXTRA_BUDGET.create(createPayload)
+
+    return true
+  } catch (error) {
+    throw error
+  }
+}
+
+const CHECK_EXTRA_BUDGET = async (reqQuery) => {
+  try {
+    const {budgetOwner, budgetName} = reqQuery
+
+    process.env.TZ
+
+    const isPastDate = await EXTRA_BUDGET.findOne({budgetOwner, budgetName})
+
+    const currentDate = new Date(Date.now())
+
+    if(isPastDate.dateToBeAdded < currentDate) {
+      await BUDGET.findOneAndUpdate({budgetOwner, budgetName},{$inc:{totalBudget:amount, remainingBudget:amount}})
+      await EXTRA_BUDGET.deleteOne({budgetOwner})
+    }
+
+    return true
+  } catch (error) {
+    throw error
+  }
+}
+
 const GIVE_MONEY = async (reqBody, reqQuery) => {
   try {
     // const {email} = reqQuery
 
     const {userEmail, budgetName, amount} = reqBody
 
-    await BUDGET.findOneAndUpdate({budgetName: budgetName, budgetOwner:userEmail} , {$inc:{totalBudget:amount}})
+    await BUDGET.findOneAndUpdate({budgetName: budgetName, budgetOwner:userEmail} , {$inc:{totalBudget:amount, remainingBudget:amount}})
 
     return true
   } catch (error) {
@@ -298,7 +343,7 @@ const DELETE_CATEGORY = async (reqQuery) => {
     throw error
   }
   
-};
+}
 
 const GET_BUDGET_PLANNER = async (reqQuery) => {
   try {
@@ -606,6 +651,8 @@ module.exports = {
   BUDGET_PLANNER_ALLOCATOR, 
   EXPENSE_ALLOCATOR,
   ADD_USER,
+  ADD_EXTRA_BUDGET,
+  CHECK_EXTRA_BUDGET,
   GIVE_MONEY,
   REQUEST_ACCESS,
   GRANT_ACCESS,

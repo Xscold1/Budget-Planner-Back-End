@@ -119,6 +119,18 @@ const successMessage = {
     statusCode: STATUS_CODE.SUCCESS,
     message: 'Request Access Sent',
   },
+
+  ACCESS_GRANTED_SUCCESSFULLY:{
+    status: STATUS.OK,
+    statusCode: STATUS_CODE.SUCCESS,
+    message: 'Access granted successfully',
+  },
+
+  EXTRA_BUDGET_SET:{
+    status: STATUS.OK,
+    statusCode: STATUS_CODE.SUCCESS,
+    message: 'Extra budget set successfully',
+  },
 }
 
 
