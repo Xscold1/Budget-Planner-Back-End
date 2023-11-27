@@ -2,6 +2,8 @@
 const BUDGET = require('../../models/budget-model');
 const EXPENSES = require('../../models/expense-model');
 const USER = require('../../models/user-model');
+const REQ_ACCESS = require('../../models/request-access');
+const EXTRA_BUDGET = require('../../models/extra-budget');
 
 //constants
 const ERROR_MESSAGE  = require('../../constants/error-message');
@@ -10,6 +12,7 @@ const ERROR_MESSAGE  = require('../../constants/error-message');
 const findUserId = require('../../utils/findUserId');
 const formatExpenses = require('../../utils/formatExpenses');
 const getDateToday = require('../../utils/getDateToday');
+const transporter = require('../../utils/nodemailer');
 
 const BUDGET_PLANNER_ALLOCATOR = async (reqBody, reqQuery) =>{
   try {
@@ -105,6 +108,180 @@ const ADD_USER = async (reqBody, reqQuery) =>{
     return addUserToBudget
   } catch (error) {
     throw error;
+  }
+}
+
+const ADD_EXTRA_BUDGET = async (reqBody, reqQuery) => {
+  try {
+    const {budgetOwner, budgetName} = reqQuery
+    const {amount, dateToBeAdded, note , } = reqBody
+
+    const createPayload = {
+      budgetOwner,
+      budgetName,
+      amount,
+      dateToBeAdded,
+      note
+    }
+
+    console.log(createPayload)
+
+    await EXTRA_BUDGET.create(createPayload)
+
+    return true
+  } catch (error) {
+    throw error
+  }
+}
+
+const CHECK_EXTRA_BUDGET = async (reqQuery) => {
+  try {
+    const {budgetOwner, budgetName} = reqQuery
+
+    process.env.TZ
+
+    const isPastDate = await EXTRA_BUDGET.findOne({budgetOwner, budgetName})
+
+    const currentDate = new Date(Date.now())
+
+    if(isPastDate.dateToBeAdded < currentDate) {
+      await BUDGET.findOneAndUpdate({budgetOwner, budgetName},{$inc:{totalBudget:amount, remainingBudget:amount}})
+      await EXTRA_BUDGET.deleteOne({budgetOwner})
+    }
+
+    return true
+  } catch (error) {
+    throw error
+  }
+}
+
+const GIVE_MONEY = async (reqBody, reqQuery) => {
+  try {
+    // const {email} = reqQuery
+
+    const {userEmail, budgetName, amount} = reqBody
+
+    await BUDGET.findOneAndUpdate({budgetName: budgetName, budgetOwner:userEmail} , {$inc:{totalBudget:amount, remainingBudget:amount}})
+
+    return true
+  } catch (error) {
+    throw error
+  }
+}
+
+const REQUEST_ACCESS = async (reqQuery) => {
+  try {
+
+    const {userEmail, budgetOwner} = reqQuery
+
+    const checkIfHasPendingRequest = await REQ_ACCESS.findOne({userEmail , budgetOwner})
+
+    if(checkIfHasPendingRequest) throw (ERROR_MESSAGE.ALREADY_HAS_PENDING_REQUEST)
+
+    await REQ_ACCESS.create({userEmail, budgetOwner})
+
+    const mailOptions = {
+      from: "budgetplanner321@gmail.com",
+      to: userEmail,
+      subject: "Account ",
+      text: `
+      Dear ${budgetOwner}
+
+      User ${userEmail} has requested to access your budgets please open the app to approve/decline their request
+      thankyou
+      
+      Sincerely,
+      B SMART APP   
+      `,
+    };
+  
+    transporter.sendMail(mailOptions, (error, info) => {
+      if(error) {
+        throw error
+      }else {
+        console.log("link sent successfully")
+      }
+    });
+
+
+    return true
+  } catch (error) {
+    throw error
+  }
+}
+
+const GRANT_ACCESS = async (reqBody, reqQuery) => {
+  try {
+    const {userEmail,budgetName, status} = reqBody
+
+    const {budgetOwner} = reqQuery
+
+    //find the user id of the user who owns the account 
+    const userId = await findUserId(userEmail)
+
+    if(status === 'deny') {
+
+      await REQ_ACCESS.findOneAndDelete({budgetOwner, userEmail})
+
+      const mailOptions = {
+        from: "budgetplanner321@gmail.com",
+        to: userEmail,
+        subject: "Account ",
+        text: `
+        Dear ${userEmail}
+  
+        User ${budgetOwner} has Denied your request
+        
+        Sincerely,
+        B SMART APP   
+        `,
+      };
+    
+      transporter.sendMail(mailOptions, (error, info) => {
+        if(error) {
+          throw error
+        }else {
+          console.log("link sent successfully")
+        }
+      });
+
+      return true
+    }
+
+    const checkIfUserAlreadyExistInBudget = await BUDGET.findOne({userId:{$in:[userId]}, budgetName: budgetName})
+
+    if(checkIfUserAlreadyExistInBudget) throw (ERROR_MESSAGE.USER_ALREADY_EXIST_IN_THE_BUDGET)
+
+    await BUDGET.findOneAndUpdate({budgetOwner,budgetName} ,{$push: {userId:userId}}, {new: true})
+
+    const mailOptions = {
+      from: "budgetplanner321@gmail.com",
+      to: userEmail,
+      subject: "Account ",
+      text: `
+      Dear ${userEmail}
+
+      User ${budgetOwner} has accepted your request and you can now access their budget
+      
+      Sincerely,
+      B SMART APP   
+      `,
+    };
+  
+    transporter.sendMail(mailOptions, (error, info) => {
+      if(error) {
+        throw error
+      }else {
+        console.log("link sent successfully")
+      }
+    });
+
+
+    await REQ_ACCESS.findOneAndDelete({budgetOwner, userEmail})
+
+    return true
+  } catch (error) {
+    throw error
   }
 }
 
@@ -218,7 +395,7 @@ const DELETE_CATEGORY = async (reqQuery) => {
     throw error
   }
   
-};
+}
 
 const GET_BUDGET_PLANNER = async (reqQuery) => {
   try {
@@ -445,7 +622,14 @@ const GET_INSIGHT = async (reqQuery) =>{
     return categories
   }else if (type === 'weekly'){
 
-    const getExpenses = await EXPENSES.aggregate([{$match:{userId:{$in:[userId]},budgetName:budgetName, $expr:{createdAt:{$gte:["$createdAt", startDate]}},  $expr:{createdAt:{$lte:["$createdAt", endDate]}}, expenseType:{$in: ['needs', 'wants', 'savings']}}}, {$group:{_id:{week:{$week:"$createdAt"}},expenses_this_week:{
+    const getExpenses = await EXPENSES.aggregate([{$match:{
+      userId:{$in:[userId]},
+      budgetName:budgetName,
+      createdAt: {
+      $gte: new Date(startDate),
+      $lte: new Date(endDate)
+    },
+    expenseType:{$in: ['needs', 'wants', 'savings']}}}, {$group:{_id:{week:{$week:"$createdAt"}},expenses_this_week:{
           $push: {
             category:"$category",
             name:"$name",
@@ -510,9 +694,25 @@ const GET_ALL_USER_INCLUDED_IN_JOINT_ACCOUNT = async (reqQuery) => {
   }
 }
 
-const DOWNLOAD_CSV = async () => {
+const GET_ALL_REQUEST_ACCESS = async (reqQuery) => {
   try {
-    
+    const {budgetOwner} = reqQuery
+
+    const findAllRequestAccess = await REQ_ACCESS.find({budgetOwner})
+
+    return findAllRequestAccess
+  } catch (error) {
+    throw error
+  }
+}
+
+const GET_ALL_EXTRA_BUDGETS = async (reqQuery) => {
+  try {
+    const {budgetOwner, budgetName} = reqQuery
+
+    const findAllExtraBudget = await EXTRA_BUDGET.find({budgetOwner, budgetName})
+
+    return findAllExtraBudget
   } catch (error) {
     throw error
   }
@@ -522,6 +722,11 @@ module.exports = {
   BUDGET_PLANNER_ALLOCATOR, 
   EXPENSE_ALLOCATOR,
   ADD_USER,
+  ADD_EXTRA_BUDGET,
+  CHECK_EXTRA_BUDGET,
+  GIVE_MONEY,
+  REQUEST_ACCESS,
+  GRANT_ACCESS,
   EDIT_BUDGET_PLANNER,
   EDIT_CATEGORY_PLANNER,
   DELETE_USER_FROM_BUDGET,
@@ -532,5 +737,6 @@ module.exports = {
   GET_INSIGHT,
   GET_ALL_BUDGET_NAME,
   GET_ALL_USER_INCLUDED_IN_JOINT_ACCOUNT,
-  DOWNLOAD_CSV
+  GET_ALL_REQUEST_ACCESS,
+  GET_ALL_EXTRA_BUDGETS
 }

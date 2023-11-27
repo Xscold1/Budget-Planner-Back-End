@@ -2,7 +2,6 @@
 const debtService = require('../../service/debt/debt');
 
 //constant
-const ERROR_MESSAGE = require('../../constants/error-message')
 const SUCCESS_MESSAGE = require('../../constants/success-message')
 
 const BORROW_AND_LEND = async(req, res) =>{
