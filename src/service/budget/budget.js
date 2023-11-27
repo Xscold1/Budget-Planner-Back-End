@@ -212,22 +212,74 @@ const REQUEST_ACCESS = async (reqQuery) => {
 
 const GRANT_ACCESS = async (reqBody, reqQuery) => {
   try {
-    const {userEmail,budgetName} = reqBody
+    const {userEmail,budgetName, status} = reqBody
 
     const {budgetOwner} = reqQuery
 
     //find the user id of the user who owns the account 
     const userId = await findUserId(userEmail)
 
+    if(status === 'deny') {
+
+      await REQ_ACCESS.findOneAndDelete({budgetOwner, userEmail})
+
+      const mailOptions = {
+        from: "budgetplanner321@gmail.com",
+        to: userEmail,
+        subject: "Account ",
+        text: `
+        Dear ${userEmail}
+  
+        User ${budgetOwner} has Denied your request
+        
+        Sincerely,
+        B SMART APP   
+        `,
+      };
+    
+      transporter.sendMail(mailOptions, (error, info) => {
+        if(error) {
+          throw error
+        }else {
+          console.log("link sent successfully")
+        }
+      });
+
+      return true
+    }
+
     const checkIfUserAlreadyExistInBudget = await BUDGET.findOne({userId:{$in:[userId]}, budgetName: budgetName})
 
     if(checkIfUserAlreadyExistInBudget) throw (ERROR_MESSAGE.USER_ALREADY_EXIST_IN_THE_BUDGET)
 
-    const grantAccessToUser = await BUDGET.findOneAndUpdate({budgetOwner,budgetName} ,{$push: {userId:userId}}, {new: true})
+    await BUDGET.findOneAndUpdate({budgetOwner,budgetName} ,{$push: {userId:userId}}, {new: true})
+
+    const mailOptions = {
+      from: "budgetplanner321@gmail.com",
+      to: userEmail,
+      subject: "Account ",
+      text: `
+      Dear ${userEmail}
+
+      User ${budgetOwner} has accepted your request and you can now access their budget
+      
+      Sincerely,
+      B SMART APP   
+      `,
+    };
+  
+    transporter.sendMail(mailOptions, (error, info) => {
+      if(error) {
+        throw error
+      }else {
+        console.log("link sent successfully")
+      }
+    });
+
 
     await REQ_ACCESS.findOneAndDelete({budgetOwner, userEmail})
 
-    return grantAccessToUser
+    return true
   } catch (error) {
     throw error
   }

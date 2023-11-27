@@ -54,7 +54,7 @@ const ADD_EXTRA_BUDGET = async (req, res) => {
 
 const CHECK_EXTRA_BUDGET = async (req, res) => {
   try {
-    const response = await budgetService.CHECK_EXTRA_BUDGET(req.query)
+    await budgetService.CHECK_EXTRA_BUDGET(req.query)
     
     return res.json({...SUCCESS_MESSAGE.UPDATE_NOTIFICATION});
   } catch (error) {
@@ -89,7 +89,7 @@ const GRANT_ACCESS = async (req, res) => {
   try {
     const response = await budgetService.GRANT_ACCESS(req.body, req.query)
     
-    return res.json({...SUCCESS_MESSAGE.ACCESS_GRANTED_SUCCESSFULLY, response});
+    return res.json({...SUCCESS_MESSAGE.GENERAL_SUCCESS_MESSAGE, response});
   } catch (error) {
     console.log(error);
     if(error.message) return res.json(error);
