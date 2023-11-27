@@ -70,6 +70,7 @@ const COMPARE_EXPENSES = async (reqQuery) =>{
   try {
 
     const {budgetName, startDate, endDate} = reqQuery
+
     const getExpenses = await EXPENSES.aggregate([
       {
         $match: {
@@ -83,7 +84,7 @@ const COMPARE_EXPENSES = async (reqQuery) =>{
           _id: {
             year: { $year: "$createdAt" },
             month: { $month: "$createdAt" },
-            category: "$category",
+            category: "$category", // Change here
           },
           totalAmount: { $sum: "$amount" },
         },
@@ -96,7 +97,7 @@ const COMPARE_EXPENSES = async (reqQuery) =>{
           },
           expenses: {
             $push: {
-              k: "$_id.category",
+              k: "$_id.category", // Change here
               v: "$totalAmount",
             },
           },
@@ -105,6 +106,8 @@ const COMPARE_EXPENSES = async (reqQuery) =>{
       {
         $project: {
           _id: 0,
+          year: "$_id.year",
+          month: "$_id.month",
           expenses: {
             $arrayToObject: "$expenses",
           },
@@ -112,12 +115,11 @@ const COMPARE_EXPENSES = async (reqQuery) =>{
       },
       {
         $sort: {
-          "_id.year": -1,
-          "_id.month": -1,
+          "year": -1,
+          "month": -1,
         },
       },
     ]);
-    
     return getExpenses
 
   } catch (error) {
