@@ -102,6 +102,12 @@ const errorMessage = {
     status: STATUS.FAILED,
     statusCode: STATUS_CODE.FAILED,
     message: 'There is still a pending request',
+  },
+
+  NOT_ENOUGH_DATA:{
+    status: STATUS.FAILED,
+    statusCode: STATUS_CODE.FAILED,
+    message: 'Not enough data to get accurate predictions',
   }
 
 }
