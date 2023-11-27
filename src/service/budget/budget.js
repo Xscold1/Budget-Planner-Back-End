@@ -622,7 +622,14 @@ const GET_INSIGHT = async (reqQuery) =>{
     return categories
   }else if (type === 'weekly'){
 
-    const getExpenses = await EXPENSES.aggregate([{$match:{userId:{$in:[userId]},budgetName:budgetName, $expr:{createdAt:{$gte:["$createdAt", startDate]}},  $expr:{createdAt:{$lte:["$createdAt", endDate]}}, expenseType:{$in: ['needs', 'wants', 'savings']}}}, {$group:{_id:{week:{$week:"$createdAt"}},expenses_this_week:{
+    const getExpenses = await EXPENSES.aggregate([{$match:{
+      userId:{$in:[userId]},
+      budgetName:budgetName,
+      createdAt: {
+      $gte: new Date(startDate),
+      $lte: new Date(endDate)
+    },
+    expenseType:{$in: ['needs', 'wants', 'savings']}}}, {$group:{_id:{week:{$week:"$createdAt"}},expenses_this_week:{
           $push: {
             category:"$category",
             name:"$name",
