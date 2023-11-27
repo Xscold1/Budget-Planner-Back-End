@@ -69,37 +69,57 @@ const ANALYZE = async (reqQuery) =>{
 const COMPARE_EXPENSES = async (reqQuery) =>{
   try {
 
-    const {email,budgetName, budgetType , startDate, endDate} = reqQuery
-
-    const userId = await findUserId(email)
-
-    if(budgetType ===  "monthly"){
-      const getExpenses = await EXPENSES.aggregate([
-        {
-          $match: {
-            userId: { $in: [userId] },
-            budgetName: budgetName,
-            createdAt: { $lte: endDate, $gte: startDate },
-          },
+    const {budgetName, startDate, endDate} = reqQuery
+    const getExpenses = await EXPENSES.aggregate([
+      {
+        $match: {
+          budgetName: budgetName,
+          $expr:{createdAt:{$gte:["$createdAt", startDate]}},
+          $expr:{createdAt:{$lte:["$createdAt", endDate]}},
         },
-        {
-          $group: {
-            _id: {
-              year: { $year: "$createdAt" },
-              month: { $month: "$createdAt" },
+      },
+      {
+        $group: {
+          _id: {
+            year: { $year: "$createdAt" },
+            month: { $month: "$createdAt" },
+            expenseType: "$expenseType",
+          },
+          expenses: {
+            $push: {
+              category: "$category",
+              name: "$name",
+              note: "$note",
+              type: "$expenseType",
+              amount: "$amount",
+              createdAt: "$createdAt",
             },
-            expenses: { $push: "$$ROOT" },
           },
         },
-        {
-          $sort: {
-            "_id.year": -1,
-            "_id.month": -1,
+      },
+      {
+        $group: {
+          _id: {
+            year: "$_id.year",
+            month: "$_id.month",
+          },
+          expenses: {
+            $push: {
+              type: "$_id.expenseType",
+              data: "$expenses",
+            },
           },
         },
-      ]);
-      return getExpenses
-    }
+      },
+      {
+        $sort: {
+          "_id.year": -1,
+          "_id.month": -1,
+        },
+      },
+    ]);
+    
+    return getExpenses
 
   } catch (error) {
     throw error
