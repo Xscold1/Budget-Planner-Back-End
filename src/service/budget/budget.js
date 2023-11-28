@@ -327,6 +327,18 @@ const EDIT_CATEGORY_PLANNER = async (reqBody, reqQuery) =>{
   }
 }
 
+const EDIT_EXPENSES = async (reqBody, reqQuery) =>{
+  try {
+    const {_id} = reqQuery
+
+    const editExpenses = await EXPENSES.findByIdAndUpdate({_id},reqBody, {new:true})
+
+    return editExpenses;
+  } catch (error) {
+    throw error;
+  }
+}
+
 const DELETE_USER_FROM_BUDGET = async(reqBody, reqQuery) =>{
   try {
     const {email, budgetName} = reqQuery
@@ -729,6 +741,7 @@ module.exports = {
   GRANT_ACCESS,
   EDIT_BUDGET_PLANNER,
   EDIT_CATEGORY_PLANNER,
+  EDIT_EXPENSES,
   DELETE_USER_FROM_BUDGET,
   DELETE_CATEGORY,
   GET_BUDGET_PLANNER,

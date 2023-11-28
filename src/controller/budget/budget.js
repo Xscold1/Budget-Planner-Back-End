@@ -140,6 +140,16 @@ const EDIT_CATEGORY_PLANNER = async (req, res) =>{
   }
 }
 
+const EDIT_EXPENSES = async (req, res) =>{
+  try {
+    const response = await budgetService.EDIT_EXPENSES(req.body, req.params)
+    return res.json({...SUCCESS_MESSAGE.UPDATE_NOTIFICATION, response})
+  } catch (error) {
+    console.log(error);
+    if(error.message) return res.json(error);
+  }
+}
+
 const GET_CATEGORY_PLANNER = async (req, res) =>{
   try {
     const response = await budgetService.GET_CATEGORY_PLANNER(req.query)
@@ -244,6 +254,7 @@ module.exports = {
   GET_TRANSACTION,
   EDIT_BUDGET_PLANNER,
   EDIT_CATEGORY_PLANNER,
+  EDIT_EXPENSES,
   GET_INSIGHT,
   GET_ALL_BUDGET_NAME,
   GET_ALL_USER_INCLUDED_IN_JOINT_ACCOUNT,

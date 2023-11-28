@@ -18,7 +18,7 @@ const BORROW_AND_LEND = async(reqBody , reqQuery) =>{
 
     const userId = await findUserId(email)
 
-    const checkIfDebtExist = await DEBT.findOne({userId:userId, name:name, debtType:debtType})
+    const checkIfDebtExist = await DEBT.findOne({userId:userId, name:name.toLower(), debtType:debtType})
 
     if(checkIfDebtExist && checkIfDebtExist.status !== 'paid' ) {
       throw (ERROR_MESSAGE.DEBT_ALEADY_EXIST)
@@ -28,7 +28,7 @@ const BORROW_AND_LEND = async(reqBody , reqQuery) =>{
       dueDate,
       totalDebt: totalDebt + ((interest / 100) * totalDebt),
       balance : totalDebt + ((interest / 100) * totalDebt),
-      name,
+      name:name.toLower(),
       interest,
       userId:userId,
       debtType: debtType
@@ -55,14 +55,14 @@ const RECEIVE_AND_PAY = async(reqBody, reqQuery) =>{
 
     const {payments, name, debtType} = reqBody
 
-    const findDebt = await DEBT.findOne({userId:userId, name: name, debtType:debtType})
+    const findDebt = await DEBT.findOne({userId:userId, name:name.toLower(), debtType:debtType})
 
     if(!findDebt) throw (ERROR_MESSAGE.DEBT_DO_NOT_EXIST)
 
     const payDebt = await DEBT.findOneAndUpdate(
       {
         userId: userId,
-        name:name,
+        name:name.toLower(),
         debtType: debtType,
         status: "Still Paying",
       },
@@ -82,7 +82,7 @@ const RECEIVE_AND_PAY = async(reqBody, reqQuery) =>{
       const expensesPayload = {
         amount:payments.amount,
         createdAt:getDateToday(),
-        note:`payment to  ${name}`,
+        note:`payment to  ${name.toLower()}`,
         category:"debt",
         expenseType:"debt",
         budgetName:budgetName,
@@ -92,7 +92,7 @@ const RECEIVE_AND_PAY = async(reqBody, reqQuery) =>{
     }
 
     if(payDebt.balance <= 0 ){
-      const updateDebtStatus = await DEBT.findOneAndUpdate({userId:userId, name:name, debtType:debtType}, {status: "paid", name:  `${name} ${dateNow.toDateString()} ${dateNow.toLocaleTimeString()}`, balance:0}, {new: true})
+      const updateDebtStatus = await DEBT.findOneAndUpdate({userId:userId, name:name.toLower(), debtType:debtType}, {status: "paid", name:`${name.toLower()} ${dateNow.toDateString()} ${dateNow.toLocaleTimeString()}`, balance:0}, {new: true})
       return updateDebtStatus
     }
 
@@ -108,7 +108,7 @@ const GET_PAYMENTS = async (reqQuery) =>{
     const {email, name} = reqQuery
     const userId = await findUserId(email)
   
-    const getPaymetsHistory = await DEBT.aggregate([{$match:{userId:userId, name:name}} , {$project:{"payments":1, _id:0}}])
+    const getPaymetsHistory = await DEBT.aggregate([{$match:{userId:userId, name:name.toLower()}} , {$project:{"payments":1, _id:0}}])
 
     if(!getPaymetsHistory) throw (SUCCESS_MESSAGE.FETCH_SUCCESS_NO_DATA)
 

@@ -13,6 +13,7 @@ router.post('/budget/request-access',budgetController.REQUEST_ACCESS);
 router.put('/budget/grant-access',budgetController.GRANT_ACCESS);
 router.put('/budget/edit-budget-allocation',budgetController.EDIT_BUDGET_PLANNER);
 router.put('/budget/edit-budget-category',budgetController.EDIT_CATEGORY_PLANNER);
+router.put('/budget/edit-expenses/:_id',budgetController.EDIT_EXPENSES);
 router.put('/budget/delete-user-from-budget',budgetController.DELETE_USER_FROM_BUDGET);
 router.put('/budget/delete-category',budgetController.DELETE_CATEGORY);
 router.get('/budget/get-budget-allocation',budgetController.GET_BUDGET_PLANNER);
