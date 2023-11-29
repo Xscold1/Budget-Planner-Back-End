@@ -329,10 +329,18 @@ const EDIT_CATEGORY_PLANNER = async (reqBody, reqQuery) =>{
 
 const EDIT_EXPENSES = async (reqBody, reqQuery) =>{
   try {
-    const {_id} = reqQuery
+    const {_id, budgetName} = reqQuery
+
+    const findExpenses = await EXPENSES.findById(_id)
+
+    let initialAmount = findExpenses.amount
 
     const editExpenses = await EXPENSES.findByIdAndUpdate({_id},reqBody, {new:true})
 
+    if(reqBody.amount){
+      let amountToReduce = reqBody.amount - initialAmount
+      await BUDGET.findOneAndUpdate({budgetName}, {$inc:{totalExpenses:amountToReduce, remainingBudget:-amountToReduce}})
+    }
     return editExpenses;
   } catch (error) {
     throw error;

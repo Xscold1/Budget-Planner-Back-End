@@ -16,6 +16,13 @@ const ANALYZE = async (reqQuery) =>{
 
     const {email, budgetName} = reqQuery
 
+    const userId = await findUserId(email)
+
+    const userBudget = await BUDGET.findOne({ userId: {$in:[userId]}, budgetName:budgetName }).populate('needs.expenses wants.expenses');
+    const getBudgetAllocated = await BUDGET.findOne({budgetOwner:email, budgetName} , {needs:1, savings:1,wants:1, _id:0})
+
+    if (!userBudget)throw(ERROR_MESSAGE.BUDGET_DOES_NOT_EXIST)
+
     const getExpenses = await EXPENSES.aggregate([
       {
         $match: {
@@ -64,13 +71,12 @@ const ANALYZE = async (reqQuery) =>{
         },
       },
     ]);
-
-    if(getExpenses.length < 5) throw(ERROR_MESSAGE.NOT_ENOUGH_DATA)
     
-    const getBudgetAllocated = await BUDGET.findOne({budgetOwner:email, budgetName} , {needs:1, savings:1,wants:1, _id:0})
+    if(getExpenses.length < 5) throw(ERROR_MESSAGE.NOT_ENOUGH_DATA)
 
     const getNeeds = getBudgetAllocated.needs.map((data) => [data.name, data.allocation])
     const getWants = getBudgetAllocated.wants.map((data) => [data.name, data.allocation])
+    const getSavings = getBudgetAllocated.savings.map((data) => [data.name, data.allocation])
 
     const allocation = {}
 
@@ -79,44 +85,70 @@ const ANALYZE = async (reqQuery) =>{
     });
     
     getWants.forEach(([name, value]) => {
-      if (allocation[name] !== undefined) {
-        allocation[name] += value;
-      } else {
         allocation[name] = value;
+    });
+
+    console.log(allocation)
+
+    let finalResults = {
+      isOverBudgetThisMonth:false,
+      isNeedsOverBudget:false,
+      isWantsOverBudget:false,
+      isNoSavings:getSavings.length > 0 || getSavings === undefined ? false: true,
+    }
+
+    // check if over budget this month
+    //------------------------------------
+    for (const need of userBudget.needs) {
+      let totalExpenses = 0;
+      for (const expense of need.expenses) {
+        totalExpenses += expense.amount;
       }
-    });    
+      if (totalExpenses > need.allocation) {
+        finalResults.isOverBudgetThisMonth = true;
+      }
+    }
+    for (const wants of userBudget.wants) {
+      let totalExpenses = 0;
+      for (const expense of wants.expenses) {
+        totalExpenses += expense.amount;
+      }
+      if (totalExpenses > wants.allocation) {
+        finalResults.isOverBudgetThisMonth = true;
+      }
+    }
+    //------------------------------------------------
 
     //predict results using linear regression
     const categories = Object.keys(getExpenses[0].expenses);
     const regressionResults = {};
     categories.forEach((category) => {
       let count = 0
-      const categoryExpenses = getExpenses.map((data) => [count++, data.expenses[category]]);
+      const categoryExpenses = getExpenses.filter(data => data.expenses[category] !== undefined).map((data) => [count++, data.expenses[category]]);
       const result = regression.linear(categoryExpenses);
       const predict = result.predict(getExpenses.length + 1);
       regressionResults[category] = [predict[1], categoryExpenses[categoryExpenses.length-1][1]];
     });
 
-    let finalResuts = {}
     for (const category in allocation) {
-      if(allocation[category] < regressionResults[category]) {
-        finalResuts[category] = {
-          allocation:allocation[category],
-          predictions:regressionResults[category][0],
-          previousValue:regressionResults[category][1],
-          isOverBudget:true
-        }
-      }else{
-        finalResuts[category] = {
-          allocation:allocation[category],
-          predictions:regressionResults[category][0],
-          previousValue:regressionResults[category][1],
-          isOverBudget:false
-        }
+      if (allocation[category] < regressionResults[category]) {
+        finalResults[category] = {
+          allocation: allocation[category],
+          predictions: regressionResults[category][0],
+          previousValue: regressionResults[category][1],
+          isOverBudget: true,
+        };
+      } else {
+        finalResults[category] = {
+          allocation: allocation[category],
+          predictions: regressionResults[category][0],
+          previousValue: regressionResults[category][1],
+          isOverBudget: false,
+        };
       }
     }
-
-    return finalResuts
+    
+    return finalResults
 
   }catch (error){
     throw error
