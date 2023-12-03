@@ -68,7 +68,7 @@ const RECEIVE_AND_PAY = async(reqBody, reqQuery) =>{
 
     const newDate = MONTHS[month] + " " + date + "," + year;
 
-    const {email, budgetName} = reqQuery
+    const {email} = reqQuery
 
     process.env.TZ
 
@@ -104,7 +104,7 @@ const RECEIVE_AND_PAY = async(reqBody, reqQuery) =>{
         note:`payment to  ${name.toLowerCase()}`,
         category:"debt",
         expenseType:"debt",
-        budgetName:getDefaultBudget(),
+        budgetName:getDefaultBudget(email),
         userId:userId,
       }
       await EXPENSES.create(expensesPayload)
@@ -174,8 +174,6 @@ const GET_LEND_LISTS = async (reqQuery) =>{
 
         await overdueDebt.save();
     });
-
-    console.log(overdueDebts);
 
     if (!getLendList.length) throw SUCCESS_MESSAGE.FETCH_SUCCESS_NO_DATA;
 
