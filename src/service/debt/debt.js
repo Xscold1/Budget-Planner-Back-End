@@ -9,6 +9,7 @@ const getDefaultBudget = require('../../utils/getDefaultBudget');
 
 //models
 const DEBT = require('../../models/debt-model')
+const BUDGET = require('../../models/budget-model')
 const EXPENSES = require('../../models/expense-model')
 
 //api
@@ -104,7 +105,7 @@ const RECEIVE_AND_PAY = async(reqBody, reqQuery) =>{
         note:`payment to  ${name.toLowerCase()}`,
         category:"debt",
         expenseType:"debt",
-        budgetName:getDefaultBudget(email),
+        budgetName: await getDefaultBudget(email),
         userId:userId,
       }
       await EXPENSES.create(expensesPayload)
