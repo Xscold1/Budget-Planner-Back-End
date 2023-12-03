@@ -126,14 +126,14 @@ const ANALYZE = async (reqQuery) =>{
       if (Object.values(category) < regressionResults[Object.keys(category)][0]) {
         finalResults.isWantsOverBudget = true
         finalResults[Object.keys(category)] = {
-          allocation: allocation[Object.keys(category)],
+          allocation: Object.values(category)[0],
           predictions: regressionResults[Object.keys(category)][0],
           previousValue: regressionResults[Object.keys(category)][1],
           isOverBudget: true,
         };
       } else {
         finalResults[Object.keys(category)] = {
-          allocation: allocation[Object.keys(category)],
+          allocation:Object.values(category)[0],
           predictions: regressionResults[Object.keys(category)][0],
           previousValue: regressionResults[Object.keys(category)][1],
           isOverBudget: false,
@@ -145,14 +145,14 @@ const ANALYZE = async (reqQuery) =>{
       if (Object.values(category) < regressionResults[Object.keys(category)][0]) {
         finalResults.isNeedsOverBudget = true
         finalResults[Object.keys(category)] = {
-          allocation: allocation[Object.keys(category)],
+          allocation: Object.values(category)[0],
           predictions: regressionResults[Object.keys(category)][0],
           previousValue: regressionResults[Object.keys(category)][1],
           isOverBudget: true,
         };
       } else {
         finalResults[Object.keys(category)] = {
-          allocation: allocation[Object.keys(category)],
+          allocation:Object.values(category)[0],
           predictions: regressionResults[Object.keys(category)][0],
           previousValue: regressionResults[Object.keys(category)][1],
           isOverBudget: false,
