@@ -77,7 +77,7 @@ const LOGIN = async (reqBody) => {
       }
       const payload = {
         data: {
-          defaultBudget: getDefaultBudget[0].budgetName,
+          defaultBudget: getDefaultBudget[0],
           token: token,
         },
       };
