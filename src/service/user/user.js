@@ -43,13 +43,14 @@ const REGISTER = async (reqBody) => {
 
 const LOGIN = async (reqBody) => {
   try {
-    const { email, password } = reqBody;
+    const {email, password} = reqBody;
     const userEmail = email.toLowerCase();
     const findUser = await USER.findOne({ email: userEmail });
 
     if (!findUser || findUser === null) throw ERROR_MESSAGE.USER_ERROR_DO_NOT_EXIST;
 
-    const getDefaultBudget = await BUDGET.findOne({ userId: { $in: [findUser._id] } }, { budgetName: 1, limit: 1 });
+    const getDefaultBudget = await BUDGET.find({ budgetOwner:email}, { budgetName: 1, limit: 1,startDate:1  }).sort({startDate: -1})
+    console.log(getDefaultBudget[0])
 
     const comparePassword = await bcrypt.compare(password, findUser.password);
 
@@ -76,7 +77,7 @@ const LOGIN = async (reqBody) => {
       }
       const payload = {
         data: {
-          defaultBudget: getDefaultBudget.budgetName,
+          defaultBudget: getDefaultBudget[0].budgetName,
           token: token,
         },
       };

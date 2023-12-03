@@ -74,21 +74,13 @@ const ANALYZE = async (reqQuery) =>{
     
     if(getExpenses.length < 5) throw(ERROR_MESSAGE.NOT_ENOUGH_DATA)
 
-    const getNeeds = getBudgetAllocated.needs.map((data) => [data.name, data.allocation])
-    const getWants = getBudgetAllocated.wants.map((data) => [data.name, data.allocation])
+    const allocation = {
+      needs: [],
+      wants: [],
+    }
+    getBudgetAllocated.needs.map((data) => allocation.needs.push({[data.name]: data.allocation}))
+    getBudgetAllocated.wants.map((data) => allocation.wants.push({[data.name]: data.allocation}))
     const getSavings = getBudgetAllocated.savings.map((data) => [data.name, data.allocation])
-
-    const allocation = {}
-
-    getNeeds.forEach(([name, value]) => {
-      allocation[name] = value;
-    });
-    
-    getWants.forEach(([name, value]) => {
-        allocation[name] = value;
-    });
-
-    console.log(allocation)
 
     let finalResults = {
       isOverBudgetThisMonth:false,
@@ -118,8 +110,8 @@ const ANALYZE = async (reqQuery) =>{
       }
     }
     //------------------------------------------------
-
     //predict results using linear regression
+    
     const categories = Object.keys(getExpenses[0].expenses);
     const regressionResults = {};
     categories.forEach((category) => {
@@ -130,23 +122,43 @@ const ANALYZE = async (reqQuery) =>{
       regressionResults[category] = [predict[1], categoryExpenses[categoryExpenses.length-1][1]];
     });
 
-    for (const category in allocation) {
-      if (allocation[category] < regressionResults[category]) {
+    allocation.wants.forEach((category) =>{
+      if (Object.values(category) < regressionResults[Object.keys(category)][0]) {
+        finalResults.isWantsOverBudget = true
         finalResults[category] = {
-          allocation: allocation[category],
-          predictions: regressionResults[category][0],
-          previousValue: regressionResults[category][1],
+          allocation: Object.values(Object.keys(category)),
+          predictions: regressionResults[Object.keys(category)][0],
+          previousValue: regressionResults[Object.keys(category)][1],
           isOverBudget: true,
         };
       } else {
-        finalResults[category] = {
-          allocation: allocation[category],
-          predictions: regressionResults[category][0],
-          previousValue: regressionResults[category][1],
+        finalResults[Object.keys(category)] = {
+          allocation: allocation[Object.keys(category)],
+          predictions: regressionResults[Object.keys(category)][0],
+          previousValue: regressionResults[Object.keys(category)][1],
           isOverBudget: false,
         };
       }
-    }
+    })
+
+    allocation.needs.forEach((category) =>{
+      if (Object.values(category) < regressionResults[Object.keys(category)][0]) {
+        finalResults.isNeedsOverBudget = true
+        finalResults[Object.keys(category)] = {
+          allocation: allocation[Object.keys(category)],
+          predictions: regressionResults[Object.keys(category)][0],
+          previousValue: regressionResults[Object.keys(category)][1],
+          isOverBudget: true,
+        };
+      } else {
+        finalResults[Object.keys(category)] = {
+          allocation: allocation[Object.keys(category)],
+          predictions: regressionResults[Object.keys(category)][0],
+          previousValue: regressionResults[Object.keys(category)][1],
+          isOverBudget: false,
+        };
+      }
+    })
     
     return finalResults
 

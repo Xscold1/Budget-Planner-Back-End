@@ -5,6 +5,7 @@ const SUCCESS_MESSAGE = require('../../constants/success-message')
 //utils
 const findUserId = require('../../utils/findUserId');
 const getDateToday = require('../../utils/getDateToday');
+const getDefaultBudget = require('../../utils/getDefaultBudget');
 
 //models
 const DEBT = require('../../models/debt-model')
@@ -13,12 +14,12 @@ const EXPENSES = require('../../models/expense-model')
 //api
 const BORROW_AND_LEND = async(reqBody , reqQuery) =>{
   try {
-    const {email} = reqQuery
+    const {email, budgetName} = reqQuery
     const {dueDate, name, interest, totalDebt, debtType} = reqBody
 
     const userId = await findUserId(email)
 
-    const checkIfDebtExist = await DEBT.findOne({userId:userId, name:name.toLowerCase(), debtType:debtType})
+    const checkIfDebtExist = await DEBT.findOne({userId:userId, name:name.toLowerCase(), debtType:debtType, budgetName:budgetName})
 
     if(checkIfDebtExist && checkIfDebtExist.status !== 'paid' ) {
       throw (ERROR_MESSAGE.DEBT_ALEADY_EXIST)
@@ -30,6 +31,7 @@ const BORROW_AND_LEND = async(reqBody , reqQuery) =>{
       balance : totalDebt + ((interest / 100) * totalDebt),
       name:name.toLowerCase(),
       interest,
+      budgetName,
       userId:userId,
       debtType: debtType
     }
@@ -45,11 +47,30 @@ const BORROW_AND_LEND = async(reqBody , reqQuery) =>{
 const RECEIVE_AND_PAY = async(reqBody, reqQuery) =>{
   try {
 
+    const MONTHS = {
+      0: 'January',
+      1: 'February',
+      2: 'March',
+      3: 'April',
+      4: 'May',
+      5: 'June',
+      6: 'July',
+      7: 'August',
+      8: 'September',
+      9: 'October',
+      10: 'November',
+      11: 'December'
+    }
+
+    const date = new Date(getDateToday()).getDate();
+    const month = new Date(getDateToday()).getMonth();
+    const year = new Date(getDateToday()).getFullYear();
+
+    const newDate = MONTHS[month] + " " + date + "," + year;
+
     const {email, budgetName} = reqQuery
 
     process.env.TZ
-
-    const dateNow = new Date()
 
     const userId = await findUserId(email)
 
@@ -59,14 +80,12 @@ const RECEIVE_AND_PAY = async(reqBody, reqQuery) =>{
 
     if(!findDebt) throw (ERROR_MESSAGE.DEBT_DO_NOT_EXIST)
 
-    const payDebt = await DEBT.findOneAndUpdate(
-      {
+    const payDebt = await DEBT.findOneAndUpdate({
         userId: userId,
         name:name.toLowerCase(),
         debtType: debtType,
         status: "Still Paying",
-      },
-      {
+      },{
         $inc: { "balance": -payments.amount },
         $push: {
           payments: { amount: payments.amount, paymentDate: getDateToday() },
@@ -85,14 +104,13 @@ const RECEIVE_AND_PAY = async(reqBody, reqQuery) =>{
         note:`payment to  ${name.toLowerCase()}`,
         category:"debt",
         expenseType:"debt",
-        budgetName:budgetName,
+        budgetName:getDefaultBudget(),
         userId:userId,
       }
       await EXPENSES.create(expensesPayload)
     }
-
     if(payDebt.balance <= 0 ){
-      const updateDebtStatus = await DEBT.findOneAndUpdate({userId:userId, name:name.toLowerCase(), debtType:debtType}, {status: "paid", name:`${name.toLowerCase()} ${dateNow.toDateString()} ${dateNow.toLocaleTimeString()}`, balance:0}, {new: true})
+      const updateDebtStatus = await DEBT.findOneAndUpdate({userId:userId, name:name.toLowerCase(), debtType:debtType}, {status: "paid", name:`${name.toLowerCase()} ${newDate}`, balance:0}, {new: true})
       return updateDebtStatus
     }
 
