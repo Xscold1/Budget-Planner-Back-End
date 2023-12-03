@@ -111,7 +111,7 @@ const ANALYZE = async (reqQuery) =>{
     }
     //------------------------------------------------
     //predict results using linear regression
-    
+
     const categories = Object.keys(getExpenses[0].expenses);
     const regressionResults = {};
     categories.forEach((category) => {
@@ -125,8 +125,8 @@ const ANALYZE = async (reqQuery) =>{
     allocation.wants.forEach((category) =>{
       if (Object.values(category) < regressionResults[Object.keys(category)][0]) {
         finalResults.isWantsOverBudget = true
-        finalResults[category] = {
-          allocation: Object.values(Object.keys(category)),
+        finalResults[Object.keys(category)] = {
+          allocation: allocation[Object.keys(category)],
           predictions: regressionResults[Object.keys(category)][0],
           previousValue: regressionResults[Object.keys(category)][1],
           isOverBudget: true,

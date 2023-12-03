@@ -20,7 +20,7 @@ const BUDGET_PLANNER_ALLOCATOR = async (reqBody, reqQuery) =>{
     const {email} = reqQuery
     const {startDate, totalBudget,needs,wants,savings, budgetType, budgetName, iconId, budgetRatio} = reqBody
 
-    const checkIfNewUser = await USER.findOne({email: email})
+    const checkIfNewUser = await USER.findOne({budgetOwner: email})
 
     if(checkIfNewUser.ifNewUser === true) await USER.updateOne({email: email}, {$set: {ifNewUser:false}})
 
