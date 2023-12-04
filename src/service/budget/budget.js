@@ -20,7 +20,7 @@ const BUDGET_PLANNER_ALLOCATOR = async (reqBody, reqQuery) =>{
     const {email} = reqQuery
     const {startDate, totalBudget,needs,wants,savings, budgetType, budgetName, iconId, budgetRatio} = reqBody
 
-    const checkIfNewUser = await USER.findOne({budgetOwner: email})
+    const checkIfNewUser = await USER.findOne({email: email})
 
     if(checkIfNewUser.ifNewUser === true) await USER.updateOne({email: email}, {$set: {ifNewUser:false}})
 
@@ -684,7 +684,7 @@ const GET_ALL_BUDGET_NAME = async (reqQuery) => {
     const {email} = reqQuery
     const userId = await findUserId(email)
 
-    const findBudgetName = BUDGET.find({userId: {$in:[userId]}}, {budgetName:1, budgetType:1,budgetOwner:1,_id:0})
+    const findBudgetName = await BUDGET.find({userId: {$in:[userId]}}, {budgetName:1, budgetType:1,budgetOwner:1,_id:0})
 
     return findBudgetName
   } catch (error) {
