@@ -114,8 +114,6 @@ const RECEIVE_AND_PAY = async(reqBody, reqQuery) =>{
       const updateDebtStatus = await DEBT.findOneAndUpdate({userId:userId, name:name.toLowerCase(), debtType:debtType}, {status: "paid", name:`${name.toLowerCase()} ${newDate}`, balance:0}, {new: true})
       return updateDebtStatus
     }
-
-    
     return payDebt
   } catch (error) {
     throw error

@@ -122,43 +122,58 @@ const ANALYZE = async (reqQuery) =>{
       regressionResults[category] = [predict[1], categoryExpenses[categoryExpenses.length-1][1]];
     });
 
-    allocation.wants.forEach((category) =>{
-      if (Object.values(category) < regressionResults[Object.keys(category)][0]) {
-        finalResults.isWantsOverBudget = true
-        finalResults[Object.keys(category)] = {
-          allocation: Object.values(category)[0],
-          predictions: regressionResults[Object.keys(category)][0],
-          previousValue: regressionResults[Object.keys(category)][1],
-          isOverBudget: true,
-        };
-      } else {
-        finalResults[Object.keys(category)] = {
-          allocation:Object.values(category)[0],
-          predictions: regressionResults[Object.keys(category)][0],
-          previousValue: regressionResults[Object.keys(category)][1],
-          isOverBudget: false,
-        };
+    allocation.wants.map((category) => {
+      const categoryKey = Object.keys(category)[0];
+      const categoryValue = Object.values(category)[0];
+    
+      if (categoryKey && categoryValue !== undefined &&
+        regressionResults[categoryKey] && regressionResults[categoryKey][0] !== undefined) {
+    
+        if (categoryValue < regressionResults[categoryKey][0]) {
+          finalResults.isWantsOverBudget = true;
+          finalResults[categoryKey] = {
+            allocation: categoryValue,
+            predictions: regressionResults[categoryKey][0],
+            previousValue: regressionResults[categoryKey][1],
+            isOverBudget: true,
+          };
+        } else {
+          finalResults[categoryKey] = {
+            allocation: categoryValue,
+            predictions: regressionResults[categoryKey][0],
+            previousValue: regressionResults[categoryKey][1],
+            isOverBudget: false,
+          };
+        }
       }
-    })
-
-    allocation.needs.forEach((category) =>{
-      if (Object.values(category) < regressionResults[Object.keys(category)][0]) {
-        finalResults.isNeedsOverBudget = true
-        finalResults[Object.keys(category)] = {
-          allocation: Object.values(category)[0],
-          predictions: regressionResults[Object.keys(category)][0],
-          previousValue: regressionResults[Object.keys(category)][1],
-          isOverBudget: true,
-        };
-      } else {
-        finalResults[Object.keys(category)] = {
-          allocation:Object.values(category)[0],
-          predictions: regressionResults[Object.keys(category)][0],
-          previousValue: regressionResults[Object.keys(category)][1],
-          isOverBudget: false,
-        };
+    });
+    
+    allocation.needs.map((category) => {
+      const categoryKey = Object.keys(category)[0];
+      const categoryValue = Object.values(category)[0];
+    
+      if (categoryKey && categoryValue !== undefined &&
+        regressionResults[categoryKey] && regressionResults[categoryKey][0] !== undefined) {
+    
+        if (categoryValue < regressionResults[categoryKey][0]) {
+          finalResults.isNeedsOverBudget = true;
+          finalResults[categoryKey] = {
+            allocation: categoryValue,
+            predictions: regressionResults[categoryKey][0],
+            previousValue: regressionResults[categoryKey][1],
+            isOverBudget: true,
+          };
+        } else {
+          finalResults[categoryKey] = {
+            allocation: categoryValue,
+            predictions: regressionResults[categoryKey][0],
+            previousValue: regressionResults[categoryKey][1],
+            isOverBudget: false,
+          };
+        }
       }
-    })
+    });
+    
     
     return finalResults
 
